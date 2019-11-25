@@ -104,3 +104,7 @@ ENV/
 # user / local configuration
 app/config/local.yml
 app/config/local_testing.yml
+
+
+# Test
+test-results
