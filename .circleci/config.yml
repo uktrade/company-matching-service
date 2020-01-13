@@ -1,0 +1,122 @@
+version: 2
+aliases:
+  - &python_version circleci/python:3.6.8
+  - &postgresql_version circleci/postgres:10.5
+  - &restore_pytest_cache
+      restore_cache:
+        name: restoring python packages from cache
+        key: cms-{{ .Branch }}-{{ checksum "environment.yml" }}
+  - &cms_envs
+    PIPENV_VENV_IN_PROJECT: true
+    DATABASE_URL: postgresql://postgres@localhost/circle_test?sslmode=disable
+    CMS_AC_ISSUERS_1_DESC: ''
+    CMS_AC_ISSUERS_1_ISSUER: circle
+    CMS_AC_ISSUERS_1_KEY: circle_test
+    CMS_AC_ISSUERS_1_SCOPE: '*'
+    CMS_CACHE_HOST: localhost
+    CMS_CACHE_PORT: 6379
+    CMS_CACHE_PWD: ''
+    CMS_DB_HOST: localhost
+    CMS_DB_NAME: circle_test
+    CMS_DB_PWD: ''
+    CMS_DB_USER: root
+    CMS_GUNICORN_PORT: 8080
+jobs:
+  build:
+    docker:
+      - image: *python_version
+        environment:
+          *cms_envs
+    working_directory: ~/cms
+    steps:
+      - checkout
+      - run: sudo chown -R circleci:circleci /usr/local/bin
+      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
+      - restore_cache:
+          keys:
+          - cms-{{ .Branch }}-{{ checksum "environment.yml" }}-{{ .Environment.CACHE_VERSION }}
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            wget https://repo.continuum.io/miniconda/Miniconda3-4.5.12-Linux-x86_64.sh -O ~/miniconda.sh
+            bash ~/miniconda.sh -b -u -p ~/miniconda
+            source ~/miniconda/bin/activate
+            conda env create -q --force -f environment.yml
+      - save_cache:
+          paths:
+            - venv
+            - ../miniconda
+            - ../.conda
+          key: cms-{{ .Branch }}-{{ checksum "environment.yml" }}-{{ .Environment.CACHE_VERSION }}
+
+  unit_test:
+    docker:
+      - image: *python_version
+        environment:
+          *cms_envs
+      - image: *postgresql_version
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: circle_test
+      - image: scality/s3server:latest
+      - image: redis:4
+    working_directory: ~/cms
+    steps:
+      - checkout
+      - *restore_pytest_cache
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            source ~/miniconda/bin/activate
+            source activate cms
+            make unit-test
+      - store_test_results:
+          path: test-results/report.xml
+      - store_artifacts:
+          path: test-results/report.xml
+
+  integration_test:
+    docker:
+      - image: *python_version
+      - image: *postgresql_version
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: circle_test
+      - image: scality/s3server:latest
+      - image: redis:4
+    working_directory: ~/cms
+    steps:
+      - checkout
+      - run: |
+          sudo apt update
+          sudo apt install postgresql-client
+          sudo ln -snf /usr/bin/psql /usr/local/bin/psql
+      - *restore_pytest_cache
+      - run:
+          environment:
+            *cms_envs
+          name: run tests
+          command: |
+            . venv/bin/activate
+            source ~/miniconda/bin/activate
+            source activate cms
+            make integration-test
+      - store_test_results:
+          path: test-results/report.xml
+      - store_artifacts:
+          path: test-results/report.xml
+
+workflows:
+  version: 2
+  pr_test:
+    jobs:
+      - build
+      - unit_test:
+          requires:
+            - build
+      - integration_test:
+          requires:
+            - unit_test
