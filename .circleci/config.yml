@@ -13,7 +13,7 @@ aliases:
     CMS_AC_ISSUERS_1_ISSUER: circle
     CMS_AC_ISSUERS_1_KEY: circle_test
     CMS_AC_ISSUERS_1_SCOPE: '*'
-    CMS_CACHE_HOST: localhost
+    CMS_CACHE_HOST: redis://localhost
     CMS_CACHE_PORT: 6379
     CMS_CACHE_PWD: ''
     CMS_DB_HOST: localhost

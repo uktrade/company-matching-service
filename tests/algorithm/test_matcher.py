@@ -18,7 +18,7 @@ Expected matches format used in tests:
 """
 
 
-def test_matcher_1(db):
+def test_matcher_1(app_with_db):
     """
         Test matching with no conflicting data
     """
@@ -28,7 +28,7 @@ def test_matcher_1(db):
     )
 
 
-def test_matcher_2(db):
+def test_matcher_2(app_with_db):
     """
         Test matching with conflicting data:
             most recent description with id '3' links same duns/name to new chid
@@ -40,7 +40,7 @@ def test_matcher_2(db):
     )
 
 
-def test_matcher_3(db):
+def test_matcher_3(app_with_db):
     """
         Test matching with conflicting data:
             most recent description should get priority
@@ -56,7 +56,7 @@ def test_matcher_3(db):
     )
 
 
-def test_matcher_4(db):
+def test_matcher_4(app_with_db):
     """
         Test matching with conflicting data:
             1:['x', 'y', None] -> 2:[None, 'y', None] => 2 should have same group as 1
@@ -67,7 +67,7 @@ def test_matcher_4(db):
     )
 
 
-def test_matcher_5a_batch(db):
+def test_matcher_5a_batch(app_with_db):
     """
         Test matching with conflicting data:
             batch mapping should give same match_ids but can have different similarity strings
@@ -82,7 +82,7 @@ def test_matcher_5a_batch(db):
     )
 
 
-def test_matcher_5b_row(db):
+def test_matcher_5b_row(app_with_db):
     """
         Test matching with conflicting data:
             batch mapping should give same match_ids but can have different similarity strings
@@ -110,7 +110,7 @@ def test_matcher_5b_row(db):
     )
 
 
-def test_matcher_6(db):
+def test_matcher_6(app_with_db):
     """
         Test matching with uncleaned cmds_ref
     """
@@ -122,7 +122,7 @@ def test_matcher_6(db):
     )
 
 
-def test_matcher_7(db):
+def test_matcher_7(app_with_db):
     """
         Test matching with contact email domain
     """
