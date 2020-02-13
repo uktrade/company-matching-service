@@ -11,6 +11,7 @@ from app.algorithm import Matcher
 from app.api.access_control import AccessControl
 from app.api.schema import COMPANY_MATCH_BODY, COMPANY_UPDATE_BODY
 from app.api.utils import get_verified_data
+from app.db.models import HawkUsers
 
 api = Blueprint(
     name="api",
@@ -21,19 +22,20 @@ ac = AccessControl()
 
 @ac.client_key_loader
 def get_client_key(client_id):
-    try:
-        issuers = app.config['access_control']['issuers']
-        for issuer in issuers:
-            if client_id == issuer['issuer']:
-                key = issuer['key']
-                if key == 'invalid':
-                    logging.error(f"Default 'invalid' issuer key is not allowed.")
-                    raise Unauthorized('Default issuer key not allowed in config.')
-                return key
-    except KeyError as e:
-        logging.error(f'invalid authorization config: {str(e)}')
-        raise Unauthorized('Invalid authorization config.')
-    raise LookupError()
+    client_key = HawkUsers.get_client_key(client_id)
+    if client_key:
+        return client_key
+    else:
+        raise LookupError()
+
+
+@ac.client_scope_loader
+def get_client_scope(client_id):
+    client_scope = HawkUsers.get_client_scope(client_id)
+    if client_scope:
+        return client_scope
+    else:
+        raise LookupError()
 
 
 @ac.nonce_checker
@@ -45,7 +47,7 @@ def seen_nonce(sender_id, nonce, timestamp):
             return True
         else:
             # Save this nonce + timestamp for later.
-            app.cache.set(key, True, ex=300)
+            app.cache.set(key, 'True', ex=300)
             return False
     except redis.exceptions.ConnectionError as e:
         logging.error(f'failed to connect to caching server: {str(e)}')
@@ -72,6 +74,7 @@ def json_error(f):
             logging.error(f'unexpected exception for API request: {str(e)}')
             response = make_response('')
             response.status_code = 500
+            raise e
         return response
 
     return error_handler

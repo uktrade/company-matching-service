@@ -1,11 +1,13 @@
 import os
 
+import certifi
 import redis
 from flask import Flask, json
 from sqlalchemy.engine.url import URL, make_url
 
 from app import config
 from app.api.views import api
+from app.commands.dev import cmd_group as dev_cmd
 
 
 def get_or_create():
@@ -30,6 +32,8 @@ def make_current_app_test_app(test_db_name):
 def _create_base_app():
     flask_app = Flask(__name__)
     flask_app.config.update(config.get_config())
+    flask_app.cli.add_command(dev_cmd)
+
     db_config = os.environ.get('DATABASE_URL') if 'DATABASE_URL' in os.environ \
         else config.get_config()['database']
 
@@ -51,17 +55,8 @@ def _register_components(flask_app):
     sql_alchemy.init_app(flask_app)
     flask_app.db = sql_alchemy
     flask_app.register_blueprint(api)
-    redis_uri = _load_uri_from_vcap_services(service_type='redis')
-    if redis_uri:
-        flask_app.cache = redis.from_url(redis_uri)
-    else:
-        flask_app.cache = redis.Redis(
-            host=flask_app.config['cache']['host'],
-            port=flask_app.config['cache']['port'],
-            password=None if flask_app.config['cache']['password'] == '' else flask_app.config['cache']['password'],
-            ssl=flask_app.config['cache']['ssl'],
-        )
-
+    redis_uri = _get_redis_url(flask_app)
+    flask_app.cache = redis.from_url(redis_uri)
     return flask_app
 
 
@@ -86,3 +81,19 @@ def _load_uri_from_vcap_services(service_type):
                     if 'uri' in service['credentials']:
                         return service['credentials']['uri']
     return None
+
+
+def _get_redis_url(flask_app):
+    redis_uri = _load_uri_from_vcap_services('redis')
+    if not redis_uri:
+        password = flask_app.config['cache'].get('password')
+        redis_uri = (
+            f"user:{password}"
+            if password
+            else ""
+            f"{flask_app.config['cache']['host']}:"
+            f"{flask_app.config['cache']['port']}"
+        )
+    if redis_uri.startswith('rediss://'):
+        return f"{redis_uri}?ssl_ca_certs={certifi.where()}"
+    return redis_uri

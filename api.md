@@ -112,12 +112,12 @@ Matches companies between different datasets
                 {
                     "id": 1,
                     "match_id": 1,
-                    "similarity": "01000000"
+                    "similarity": "010000"
                 },
                 {
                     "id": 2,
                     "match_id": 2,
-                    "similarity": "11000000"
+                    "similarity": "110000"
                 }                
             ]
         }

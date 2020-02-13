@@ -4,7 +4,7 @@ from app.db.models import CompanyDescriptionModel
 
 
 @pytest.fixture(scope='module')
-def add_company_description_db(db_module):
+def add_company_description_db(app_with_db_module):
     def _method(company_description):
         for description in company_description:
             defaults = {
@@ -22,7 +22,7 @@ def add_company_description_db(db_module):
 
 
 @pytest.fixture(scope='module')
-def add_mapping_db(db_module):
+def add_mapping_db(app_with_db_module):
     def _method(mappings, model):
         for mapping in mappings:
             field = [key for key in mapping.keys() if key not in ['match_id', 'id']][0]

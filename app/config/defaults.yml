@@ -13,13 +13,8 @@ access_control:
   hawk_accept_untrusted_content: $ENV{CMS_AC_HAWK_ACCEPT_UNTRUSTED_CONTENT, False}
   hawk_localtime_offset_in_seconds: $ENV{CMS_AC_HAWK_LOCALTIME_OFFSET_IN_SECONDS, 0}
   hawk_timestamp_skew_in_seconds: $ENV{CMS_AC_HAWK_TIMESTAMP_SKEW_IN_SECONDS, 60}
-  issuers:
-    - issuer: $ENV{CMS_AC_ISSUERS_1_ISSUER, iss1}
-      key: $ENV{CMS_AC_ISSUERS_1_KEY, invalid}
-      description: $ENV{CMS_AC_ISSUERS_1_DESC, }
-      scope: $ENV{CMS_AC_ISSUERS_1_SCOPE, }
 cache:
-  host: $ENV{CMS_CACHE_HOST, 127.0.0.1}
+  host: $ENV{CMS_CACHE_HOST, redis://localhost}
   port: $ENV{CMS_CACHE_PORT, 6379}
   password: $ENV{CMS_CACHE_PWD, }
   ssl: $ENV{CMS_CACHE_SSL, True}
