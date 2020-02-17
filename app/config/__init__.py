@@ -9,16 +9,21 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 
 
 def get_config():
-    default = _get_default_config()
+    default = _get_config_from_file('defaults.yml')
     _parse_env_vars(default)
     local = _get_local_config()
-    _update_dict(default, local)
+    config_dict = _update_dict(default, local)
+    docker = _get_docker_config()
+    _update_dict(config_dict, docker)
     return default
 
 
-def _get_default_config():
-    with open(os.path.join(__location__, 'defaults.yml')) as ymlfile:
-        return yaml.safe_load(ymlfile)
+def _get_config_from_file(file_name, check_if_exists=False):
+    config_file = Path(os.path.join(__location__, file_name))
+    if config_file.is_file() or not check_if_exists:
+        with open(os.path.join(__location__, file_name)) as ymlfile:
+            return yaml.safe_load(ymlfile)
+    return {}
 
 
 def _get_local_config():
@@ -27,11 +32,14 @@ def _get_local_config():
         file_name = 'local_testing.yml'
     else:
         file_name = 'local.yml'
-    local_config = Path(os.path.join(__location__, file_name))
-    if local_config.is_file():
-        with open(os.path.join(__location__, file_name)) as ymlfile:
-            return yaml.safe_load(ymlfile)
-    return {}
+    return _get_config_from_file(file_name, check_if_exists=True)
+
+
+def _get_docker_config():
+    is_using_docker = bool(int(os.environ.get('DOCKER', '0')))
+    if not is_using_docker:
+        return {}
+    return _get_config_from_file('docker.yml', check_if_exists=True)
 
 
 def _update_dict(dest, source):
