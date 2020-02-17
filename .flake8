@@ -1,0 +1,9 @@
+[flake8]
+application-import-names=app,authentication,data_report,db,etl,tests,utils
+application-package-names=authbroker_client
+exclude =
+    venv,
+    .venv
+import_order_style = smarkets
+max-line-length = 100
+extend-ignore = E203

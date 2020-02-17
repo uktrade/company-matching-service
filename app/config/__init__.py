@@ -60,7 +60,7 @@ def _parse_env_vars(config):
             for item in v:
                 _parse_env_vars(item)
         else:
-            pattern = "\$ENV\{(.*), (.*)\}"
+            pattern = "\\$ENV\\{(.*), (.*)\\}"
             search = re.search(pattern, str(config[k]))
             if search:
                 env_var = search.group(1)
@@ -69,6 +69,6 @@ def _parse_env_vars(config):
                 if value.isdigit():
                     value = int(value)
                 elif value in ['True', 'False']:
-                    value = (value == 'True')
+                    value = value == 'True'
                 config[k] = value
     return config

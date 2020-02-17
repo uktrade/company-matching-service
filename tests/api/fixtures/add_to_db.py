@@ -19,6 +19,7 @@ def add_company_description_db(app_with_db_module):
                 'cdms_ref': description.get('cdms_ref', None),
             }
             CompanyDescriptionModel.get_or_create(id=description.get('id', None), defaults=defaults)
+
     return _method
 
 
@@ -31,9 +32,6 @@ def add_mapping_db(app_with_db_module):
                 'match_id': mapping.get('match_id', None),
                 'id': mapping.get('id', None),
             }
-            model.get_or_create(
-                **{field: mapping.get(field, None)},
-                defaults=defaults
-            )
-    return _method
+            model.get_or_create(**{field: mapping.get(field, None)}, defaults=defaults)
 
+    return _method

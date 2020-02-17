@@ -1,4 +1,5 @@
 import sqlalchemy
+
 from app.db.models import sql_alchemy
 
 
@@ -28,7 +29,7 @@ def table_exists(schema, table_name, materialized_view=False):
     query = f"""
      SELECT EXISTS (
         SELECT 1
-           FROM   {'information_schema.tables' if not materialized_view else 'pg_matviews'} 
+           FROM   {'information_schema.tables' if not materialized_view else 'pg_matviews'}
            WHERE  {'table_schema' if not materialized_view else 'schemaname'} = '{schema}'
            AND    {'table_name' if not materialized_view else 'matviewname'} = '{table_name}'
      );
