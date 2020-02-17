@@ -19,13 +19,15 @@ def get_or_create():
 
 def make_current_app_test_app(test_db_name):
     flask_app = get_or_create()
-    postgres_db_config = os.environ.get('DATABASE_URL') if 'DATABASE_URL' in os.environ \
-        else config.get_config()['database']
+    postgres_db_config = (
+        os.environ.get('DATABASE_URL')
+        if 'DATABASE_URL' in os.environ
+        else config.get_config()['app']['database_url']
+    )
     flask_app.config.update({
         'TESTING': True,
         'SQLALCHEMY_DATABASE_URI': _create_sql_alchemy_connection_str(postgres_db_config, test_db_name)
     })
-    flask_app.config['database']['use-db'] = test_db_name
     return flask_app
 
 
@@ -34,12 +36,14 @@ def _create_base_app():
     flask_app.config.update(config.get_config())
     flask_app.cli.add_command(dev_cmd)
 
-    db_config = os.environ.get('DATABASE_URL') if 'DATABASE_URL' in os.environ \
-        else config.get_config()['database']
-
+    postgres_db_config = (
+        os.environ.get('DATABASE_URL')
+        if 'DATABASE_URL' in os.environ
+        else config.get_config()['app']['database_url']
+    )
     flask_app.config.update({
         'TESTING': False,
-        'SQLALCHEMY_DATABASE_URI': _create_sql_alchemy_connection_str(db_config),
+        'SQLALCHEMY_DATABASE_URI': _create_sql_alchemy_connection_str(postgres_db_config),
         # set SQLALCHEMY_TRACK_MODIFICATIONS to False because
         # default of None produces warnings, and track modifications
         # are not required
@@ -61,13 +65,10 @@ def _register_components(flask_app):
 
 
 def _create_sql_alchemy_connection_str(cfg, db_name=None):
-    if type(cfg) is dict:
-        return URL(cfg['dialect'], cfg['user'], cfg['password'], cfg['host'], cfg['port'], db_name or cfg['use-db'])
-    else:
-        url = make_url(cfg)
-        if db_name:
-            url.database = db_name
-        return url
+    url = make_url(cfg)
+    if db_name:
+        url.database = db_name
+    return url
 
 
 def _load_uri_from_vcap_services(service_type):

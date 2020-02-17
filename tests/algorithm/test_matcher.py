@@ -136,6 +136,20 @@ def test_matcher_7(app_with_db):
     )
 
 
+def test_matcher_8(app_with_db):
+    """
+        Test matching with similar company names
+    """
+    _assert_matches(
+        descriptions=[
+            ('inc', None, None, 'corp ltd', None, None),
+            ('inc', None, None, 'corp limited', None, None),
+            ('inc', None, None, 'test ltd', None, None)
+        ],
+        expected_matches=[('1', 1, '001000'), ('2', 1, '001000'), ('3', 2, '001000')]
+    )
+
+
 def _assert_matches(descriptions, expected_matches):
     matcher = Matcher()
     json_data = _create_json(descriptions)

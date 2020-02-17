@@ -10,6 +10,7 @@ def setup_function(app, add_company_description_db, add_mapping_db):
     add_company_description_db([
         {
             'id': 1,
+            'data_hash': 'hash1',
             'source': 'dit.datahub',
             'datetime': '2009-10-10 12:12:12',
             'company_name': 'bad corp',
@@ -17,6 +18,7 @@ def setup_function(app, add_company_description_db, add_mapping_db):
         },
         {
             'id': 2,
+            'data_hash': 'hash2',
             'source': 'dit.datahub',
             'datetime': '2010-10-10 00:00:00',
             'company_name': 'ugly corp',
@@ -24,6 +26,7 @@ def setup_function(app, add_company_description_db, add_mapping_db):
         },
         {
             'id': 3,
+            'data_hash': 'hash3',
             'source': 'dit.export-wins',
             'datetime': '2011-10-10 00:00:00',
             'company_name': 'bad corp',
@@ -116,4 +119,19 @@ def test_match_invalid_contact_email(app):
             },
             expected_response=(400, {'error': "'invalid' does not match '[^@]+@[^@]+\\\\.[^@]+'"})
         )
+
+
+def test_update_invalid_companies_house_id(app):
+    with app.test_client() as app_context:
+        assert_search_api_response(
+            app_context=app_context,
+            api='http://localhost:80/api/v1/company/update/',
+            body={
+                'descriptions': [
+                    {'id': '1', 'datetime': '2010-01-01 00:00:00', 'companies_house_id': '1234567', 'source': 'dit.datahub'},
+                ],
+            },
+            expected_response=(400, {'error': "'1234567' is too short"})
+        )
+
 

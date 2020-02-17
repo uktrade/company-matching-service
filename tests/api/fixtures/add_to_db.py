@@ -8,6 +8,7 @@ def add_company_description_db(app_with_db_module):
     def _method(company_description):
         for description in company_description:
             defaults = {
+                'data_hash': description.get('data_hash', None),
                 'source': description.get('source', None),
                 'datetime': description.get('datetime', None),
                 'company_name': description.get('company_name', None),
