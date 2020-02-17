@@ -1,0 +1,2 @@
+app:
+  database_url: postgresql://postgres:postgres@cms_postgres/postgres
