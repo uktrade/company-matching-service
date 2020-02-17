@@ -60,6 +60,7 @@ class CompanyDescriptionModel(BaseModel):
     __table_args__ = {'schema': 'public'}
 
     id = _col(_int, primary_key=True)
+    data_hash = _col(_text, nullable=False, unique=True)
     source = _col(_text, nullable=False)
     datetime = _col(_dt, nullable=False)
     companies_house_id = _col(_text)

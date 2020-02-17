@@ -1,10 +1,5 @@
-database:
-  dialect: postgresql
-  user: $ENV{CMS_DB_USER, postgres}
-  password: $ENV{CMS_DB_PWD, postgres}
-  host: $ENV{CMS_DB_HOST, localhost}
-  port: $ENV{CMS_DB_PORT, 5432}
-  use-db: $ENV{CMS_DB_NAME, matching}
+app:
+  database_url: $ENV{CMS_APP_DATABASE_URL, postgresql://postgres@localhost/postgres}
 access_control:
   hawk_enabled: $ENV{CMS_AC_HAWK_ENABLED, True}
   hawk_nonce_enabled: $ENV{CMS_AC_HAWK_NONCE_ENABLED, True}

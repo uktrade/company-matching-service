@@ -101,6 +101,7 @@ def update_company_descriptions():
     insert into {CompanyDescriptionModel.__tablename__}
     (   
         id,
+        data_hash,
         source,
         datetime,
         companies_house_id,
@@ -110,8 +111,20 @@ def update_company_descriptions():
         cdms_ref,
         postcode
     )
-    select 
+    select
         desc_id,
+        md5(
+            ROW(
+                source::text,
+                datetime::text,
+                companies_house_id::text,
+                duns_number::text,
+                company_name::text,
+                contact_email::text,
+                cdms_ref::text,
+                postcode::text
+            )::TEXT
+        ) as data_hash,
         source,
         datetime,
         companies_house_id,
@@ -120,7 +133,8 @@ def update_company_descriptions():
         contact_email,
         cdms_ref,
         postcode
-    from tmp;
+    from tmp
+    on conflict (data_hash) do nothing;
     commit; """
     db_utils.execute_statement(stmt)
 
