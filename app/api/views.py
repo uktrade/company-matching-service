@@ -5,7 +5,7 @@ import redis
 from flask import current_app as app, make_response, request
 from flask import jsonify
 from flask.blueprints import Blueprint
-from werkzeug.exceptions import Unauthorized, BadRequest, NotFound
+from werkzeug.exceptions import BadRequest, NotFound, Unauthorized
 
 from app.algorithm import Matcher
 from app.api.access_control import AccessControl
@@ -13,10 +13,7 @@ from app.api.schema import COMPANY_MATCH_BODY, COMPANY_UPDATE_BODY
 from app.api.utils import get_verified_data
 from app.db.models import HawkUsers
 
-api = Blueprint(
-    name="api",
-    import_name=__name__
-)
+api = Blueprint(name="api", import_name=__name__)
 ac = AccessControl()
 
 
@@ -63,9 +60,7 @@ def json_error(f):
             response = jsonify({})
             response.status_code = 404
         except BadRequest as e:
-            response = jsonify({
-                'error': e.description
-            })
+            response = jsonify({'error': e.description})
             response.status_code = 400
         except Unauthorized:
             response = make_response('')
@@ -82,9 +77,7 @@ def json_error(f):
 
 @api.route('/healthcheck/', methods=["GET"])
 def healthcheck():
-    return jsonify({
-        "status": "OK"
-    })
+    return jsonify({"status": "OK"})
 
 
 @api.route('/api/v1/company/update/', methods=['POST'])
@@ -97,19 +90,15 @@ def update():
     if match not in ['true', 'false']:
         raise BadRequest('invalid match parameter. needs to be true or false')
     else:
-        match = (match == 'true')
+        match = match == 'true'
 
     matcher = Matcher()
     matches = matcher.match(query['descriptions'], update=True, match=match)
 
     if match:
-        result = {
-            'matches': []
-        }
+        result = {'matches': []}
         for row in matches:
-            result['matches'].append(
-                {'id': row[0], 'match_id': row[1], 'similarity': row[2]},
-            )
+            result['matches'].append({'id': row[0], 'match_id': row[1], 'similarity': row[2]})
         return jsonify(result)
     else:
         return '', 204
@@ -121,17 +110,9 @@ def update():
 @ac.authorization_required
 def match():
     query = get_verified_data(request, COMPANY_MATCH_BODY)
-    result = {
-        'matches': []
-    }
+    result = {'matches': []}
     matcher = Matcher()
     matches = matcher.match(query['descriptions'], update=False)
     for row in matches:
-        result['matches'].append(
-            {'id': row[0], 'match_id': row[1], 'similarity': row[2]},
-        )
+        result['matches'].append({'id': row[0], 'match_id': row[1], 'similarity': row[2]})
     return jsonify(result)
-
-
-
-

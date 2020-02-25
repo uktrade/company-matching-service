@@ -1,6 +1,6 @@
 from flask import current_app as app
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import ForeignKey, DDL
+from sqlalchemy import DDL, ForeignKey
 from sqlalchemy.sql import ClauseElement
 
 db = SQLAlchemy()

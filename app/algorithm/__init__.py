@@ -1,9 +1,12 @@
-from app.algorithm import sql_statements as sql
-from app.algorithm.sql_statements import json_to_tmp_table, get_match_ids, update_company_descriptions, update_mappings
+from app.algorithm.sql_statements import (
+    get_match_ids,
+    json_to_tmp_table,
+    update_company_descriptions,
+    update_mappings,
+)
 
 
 class Matcher:
-
     def match(self, json_data, update=True, match=True):
         json_to_tmp_table(json_data)
         if update:

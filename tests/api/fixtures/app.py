@@ -1,4 +1,5 @@
 import datetime
+
 import pytest
 import sqlalchemy_utils
 
@@ -29,9 +30,7 @@ def test_client(app):
 def app_with_db(app):
     app.db.session.close_all()
     app.db.engine.dispose()
-    sqlalchemy_utils.create_database(
-        app.config['SQLALCHEMY_DATABASE_URI'],
-    )
+    sqlalchemy_utils.create_database(app.config['SQLALCHEMY_DATABASE_URI'],)
     app.db.create_all()
     create_sequences()
     yield app
@@ -45,9 +44,7 @@ def app_with_db(app):
 def app_with_db_module(app):
     app.db.session.close_all()
     app.db.engine.dispose()
-    sqlalchemy_utils.create_database(
-        app.config['SQLALCHEMY_DATABASE_URI'],
-    )
+    sqlalchemy_utils.create_database(app.config['SQLALCHEMY_DATABASE_URI'],)
     app.db.create_all()
     create_sequences()
     yield app

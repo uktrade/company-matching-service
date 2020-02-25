@@ -1,7 +1,9 @@
 import json
 
 
-def assert_search_api_response(app_context, api, body, expected_response, params='', order_matters=False):
+def assert_search_api_response(
+    app_context, api, body, expected_response, params='', order_matters=False
+):
     status_code, data = _post_request(params, api, body, app_context)
     assert status_code == expected_response[0]
     assert _ordered(data) == _ordered(expected_response[1])
@@ -14,11 +16,7 @@ def assert_search_api_response(app_context, api, body, expected_response, params
 def _post_request(params, endpoint, json_query, app_context):
     url = f'{endpoint}?{params}'
 
-    res = app_context.post(
-        url,
-        data=json.dumps(json_query),
-        content_type='application/json',
-    )
+    res = app_context.post(url, data=json.dumps(json_query), content_type='application/json',)
     status_code = res.status_code
     try:
         data = json.loads(res.get_data())
@@ -38,4 +36,3 @@ def _ordered(obj):
         return sorted(_ordered(x) for x in obj)
     else:
         return obj
-

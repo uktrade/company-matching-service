@@ -9,7 +9,7 @@ Company description short format used in tests:
 
 Shorter tuple will assume None values for the remaining attributes.
 
-If datetime is labeled 'inc' each description will be assigned an incremental timestamp increasing 
+If datetime is labeled 'inc' each description will be assigned an incremental timestamp increasing
 from low to high indices.
 
 Expected matches format used in tests:
@@ -24,7 +24,7 @@ def test_matcher_1(app_with_db):
     """
     _assert_matches(
         descriptions=[('inc', 1, 'a', 'k'), ('inc', 2, 'b', 'l'), ('inc', 3, 'c', 'm')],
-        expected_matches=[('1', 1, '111000'), ('2', 2, '111000'), ('3', 3, '111000')]
+        expected_matches=[('1', 1, '111000'), ('2', 2, '111000'), ('3', 3, '111000')],
     )
 
 
@@ -36,7 +36,7 @@ def test_matcher_2(app_with_db):
     """
     _assert_matches(
         descriptions=[('inc', 1, 'a', 'k'), ('inc', None, 'a', 'l'), ('inc', 2, 'a', 'k')],
-        expected_matches=[('1', 1, '100000'), ('2', 2, '011000'), ('3', 2, '111000')]
+        expected_matches=[('1', 1, '100000'), ('2', 2, '011000'), ('3', 2, '111000')],
     )
 
 
@@ -46,13 +46,11 @@ def test_matcher_3(app_with_db):
             most recent description should get priority
     """
     _assert_matches(
-        descriptions=[('2019-01-02 00:00:00', 1, 'a', 'k')],
-        expected_matches=[('1', 1, '111000')],
+        descriptions=[('2019-01-02 00:00:00', 1, 'a', 'k')], expected_matches=[('1', 1, '111000')],
     )
     # the previous more recent description states that 'a' and 'k' are not part of this group
     _assert_matches(
-        descriptions=[('2019-01-01 00:00:00', 2, 'a', 'k')],
-        expected_matches=[('1', 2, '100000')],
+        descriptions=[('2019-01-01 00:00:00', 2, 'a', 'k')], expected_matches=[('1', 2, '100000')],
     )
 
 
@@ -63,7 +61,7 @@ def test_matcher_4(app_with_db):
     """
     _assert_matches(
         descriptions=[('inc', 1, 'a', None), ('inc', None, 'a', None)],
-        expected_matches=[('1', 1, '110000'), ('2', 1, '010000')]
+        expected_matches=[('1', 1, '110000'), ('2', 1, '010000')],
     )
 
 
@@ -74,11 +72,20 @@ def test_matcher_5a_batch(app_with_db):
 
     """
     _assert_matches(
-        descriptions=[('inc', 1, 'a', 'k'), ('inc', 1, 'b', None), ('inc', 2, 'b', None),
-                      ('inc', None, 'b', 'l'), ('inc', None, 'c', 'k')],
+        descriptions=[
+            ('inc', 1, 'a', 'k'),
+            ('inc', 1, 'b', None),
+            ('inc', 2, 'b', None),
+            ('inc', None, 'b', 'l'),
+            ('inc', None, 'c', 'k'),
+        ],
         expected_matches=[
-            ('1', 1, '110000'), ('2', 1, '100000'), ('3', 2, '110000'), ('4', 2, '011000'), ('5', 3, '011000')
-        ]
+            ('1', 1, '110000'),
+            ('2', 1, '100000'),
+            ('3', 2, '110000'),
+            ('4', 2, '011000'),
+            ('5', 3, '011000'),
+        ],
     )
 
 
@@ -89,24 +96,21 @@ def test_matcher_5b_row(app_with_db):
 
     """
     _assert_matches(
-        descriptions=[('2019-01-01 00:00:00', 1, 'a', 'k')],
-        expected_matches=[('1', 1, '111000')]
+        descriptions=[('2019-01-01 00:00:00', 1, 'a', 'k')], expected_matches=[('1', 1, '111000')]
     )
     _assert_matches(
-        descriptions=[('2019-01-02 00:00:00', 1, 'b', None)],
-        expected_matches=[('1', 1, '110000')]
+        descriptions=[('2019-01-02 00:00:00', 1, 'b', None)], expected_matches=[('1', 1, '110000')]
     )
     _assert_matches(
-        descriptions=[('2019-01-03 00:00:00', 2, 'b', None)],
-        expected_matches=[('1', 2, '110000')]
+        descriptions=[('2019-01-03 00:00:00', 2, 'b', None)], expected_matches=[('1', 2, '110000')]
     )
     _assert_matches(
         descriptions=[('2019-01-04 00:00:00', None, 'b', 'l')],
-        expected_matches=[('1', 2, '011000')]
+        expected_matches=[('1', 2, '011000')],
     )
     _assert_matches(
         descriptions=[('2019-01-05 00:00:00', None, 'c', 'k')],
-        expected_matches=[('1', 3, '011000')]
+        expected_matches=[('1', 3, '011000')],
     )
 
 
@@ -116,9 +120,10 @@ def test_matcher_6(app_with_db):
     """
     _assert_matches(
         descriptions=[
-            ('inc', None, None, None, None, 'ORG-10052267'), ('inc', None, None, None, None, '10052267')
+            ('inc', None, None, None, None, 'ORG-10052267'),
+            ('inc', None, None, None, None, '10052267'),
         ],
-        expected_matches=[('1', 1, '000010'), ('2', 1, '000010')]
+        expected_matches=[('1', 1, '000010'), ('2', 1, '000010')],
     )
 
 
@@ -130,9 +135,9 @@ def test_matcher_7(app_with_db):
         descriptions=[
             ('inc', None, None, None, 'john@domain.com', None),
             ('inc', None, None, None, 'ann@domain.com', None),
-            ('inc', None, None, None, 'ann@otherdomain.com', None)
+            ('inc', None, None, None, 'ann@otherdomain.com', None),
         ],
-        expected_matches=[('1', 1, '000100'), ('2', 1, '000100'), ('3', 2, '000100')]
+        expected_matches=[('1', 1, '000100'), ('2', 1, '000100'), ('3', 2, '000100')],
     )
 
 
@@ -144,9 +149,9 @@ def test_matcher_8(app_with_db):
         descriptions=[
             ('inc', None, None, 'corp ltd', None, None),
             ('inc', None, None, 'corp limited', None, None),
-            ('inc', None, None, 'test ltd', None, None)
+            ('inc', None, None, 'test ltd', None, None),
         ],
-        expected_matches=[('1', 1, '001000'), ('2', 1, '001000'), ('3', 2, '001000')]
+        expected_matches=[('1', 1, '001000'), ('2', 1, '001000'), ('3', 2, '001000')],
     )
 
 
@@ -183,5 +188,3 @@ def _create_json(value_list):
             data['postcode'] = values[6]
         json_data.append(data)
     return json_data
-
-

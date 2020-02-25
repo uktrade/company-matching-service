@@ -109,6 +109,29 @@ jobs:
       - store_artifacts:
           path: test-results/report.xml
 
+  format_checks:
+    docker:
+      - image: *python_version
+      - image: *postgresql_version
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: circle_test
+      - image: scality/s3server:latest
+      - image: redis:4
+    working_directory: ~/cms
+    steps:
+      - checkout
+      - *restore_pytest_cache
+      - run:
+          environment:
+            *cms_envs
+          name: run format checks
+          command: |
+            . venv/bin/activate
+            source ~/miniconda/bin/activate
+            source activate cms
+            make check
+
 workflows:
   version: 2
   pr_test:

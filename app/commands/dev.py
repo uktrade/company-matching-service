@@ -76,4 +76,3 @@ def add_hawk_user(client_id, client_key, client_scope, description):
             client_scope=client_scope_list,
             description=description,
         )
-

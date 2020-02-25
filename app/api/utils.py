@@ -1,6 +1,6 @@
 import json
 
-from jsonschema import validate, FormatChecker
+from jsonschema import FormatChecker, validate
 from jsonschema.exceptions import ValidationError
 from werkzeug.exceptions import BadRequest
 
@@ -40,5 +40,3 @@ def schema_validation_error_path(e):
     while len(e.path) > 0:
         path += "/{}".format(e.path.popleft())
     return path or "/"
-
-

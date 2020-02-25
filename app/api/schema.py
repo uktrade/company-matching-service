@@ -10,35 +10,13 @@ COMPANY_MATCH_BODY = {
                 "type": "object",
                 "minLength": 1,
                 "properties": {
-                    "id": {
-                        "type": "string",
-                        "minLength": 1
-                    },
-                    "company_name": {
-                        "type": "string",
-                        "minLength": 1
-                    },
-                    "companies_house_id": {
-                        "type": "string",
-                        "minLength": 8,
-                        "maxLength": 8
-                    },
-                    "duns_number": {
-                        "type": "string",
-                        "minLength": 1
-                    },
-                    "contact_email": {
-                        "type": "string",
-                        "pattern": "[^@]+@[^@]+\.[^@]+"
-                    },
-                    "postcode": {
-                        "type": "string",
-                        "minLength": 1
-                    },
-                    "cdms_ref": {
-                        "type": "string",
-                        "minLength": 1
-                    },
+                    "id": {"type": "string", "minLength": 1},
+                    "company_name": {"type": "string", "minLength": 1},
+                    "companies_house_id": {"type": "string", "minLength": 8, "maxLength": 8},
+                    "duns_number": {"type": "string", "minLength": 1},
+                    "contact_email": {"type": "string", "pattern": "[^@]+@[^@]+\\.[^@]+"},
+                    "postcode": {"type": "string", "minLength": 1},
+                    "cdms_ref": {"type": "string", "minLength": 1},
                 },
                 "required": ["id"],
                 "anyOf": [
@@ -67,35 +45,13 @@ COMPANY_UPDATE_BODY = {
                 "type": "object",
                 "minLength": 1,
                 "properties": {
-                    "id": {
-                        "type": "string",
-                        "minLength": 1
-                    },
-                    "company_name": {
-                        "type": "string",
-                        "minLength": 1
-                    },
-                    "companies_house_id": {
-                        "type": "string",
-                        "minLength": 8,
-                        "maxLength": 8
-                    },
-                    "duns_number": {
-                        "type": "string",
-                        "minLength": 1
-                    },
-                    "contact_email": {
-                        "type": "string",
-                        "pattern": "[^@]+@[^@]+\.[^@]+"
-                    },
-                    "postcode": {
-                        "type": "string",
-                        "minLength": 1
-                    },
-                    "cdms_ref": {
-                        "type": "string",
-                        "minLength": 1
-                    },
+                    "id": {"type": "string", "minLength": 1},
+                    "company_name": {"type": "string", "minLength": 1},
+                    "companies_house_id": {"type": "string", "minLength": 8, "maxLength": 8},
+                    "duns_number": {"type": "string", "minLength": 1},
+                    "contact_email": {"type": "string", "pattern": "[^@]+@[^@]+\\.[^@]+"},
+                    "postcode": {"type": "string", "minLength": 1},
+                    "cdms_ref": {"type": "string", "minLength": 1},
                 },
                 "required": ["id", "datetime", "source"],
                 "anyOf": [
