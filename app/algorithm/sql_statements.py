@@ -225,34 +225,37 @@ def update_mappings():
         db_utils.execute_statement(stmt)
 
 
-def get_match_ids():
+def get_match_ids(dnb_match=False):
     stmt = f"""
-    select
+    select {'distinct on (id)' if dnb_match else ''}
+                -- select most recent dnb number in match group
         id,
-        aggr_match_id,
+        {'coalesce(SQ.duns_number, duns_number_mapping.duns_number)'
+            if dnb_match else 'aggr_match_id'},
         concat(
             {','.join(
-        [
-            f'CASE WHEN {f}_match_id = aggr_match_id THEN 1 ELSE 0 END'
-            for f, _ in _field_to_mapping_table
-        ]
-        )
-    }
+                [
+                    f'CASE WHEN {f}_match_id = aggr_match_id THEN 1 ELSE 0 END'
+                    for f, _ in _field_to_mapping_table
+                ]
+            )}
         ) as similarity
     from (
         select
             t1.id,
+            {'t1.duns_number,' if dnb_match else ''}
             {','.join(f'{f}_mapping.match_id as {f}_match_id' for f, _ in _field_to_mapping_table)},
             coalesce({','.join(
                 [f'{f}_mapping.match_id' for f, _ in _field_to_mapping_table]
             )}) as aggr_match_id
         from tmp t1
             {' '.join(
-        [
-            f'left join {mt} {f}_mapping using ({f})' for f, mt in _field_to_mapping_table
-        ]
-        )
-    }
-    ) SQ;
+                [
+                    f'left join {mt} {f}_mapping using ({f})' for f, mt in _field_to_mapping_table
+                ]
+            )}
+    ) SQ
+    {f'''left join duns_number_mapping on duns_number_mapping.match_id = aggr_match_id
+    order by id, duns_number_mapping.datetime desc''' if dnb_match else ''}
     """
     return db_utils.execute_query(stmt)

@@ -4,9 +4,9 @@ from app.db.models import CompaniesHouseIDMapping, CompanyNameMapping
 from tests.api.support.utils import assert_search_api_response
 
 
-@pytest.fixture(scope='module', autouse=True)
-def setup_function(app_with_db_module):
-    app_with_db_module.config['access_control']['hawk_enabled'] = False
+@pytest.fixture(autouse=True)
+def setup_function(app_with_db):
+    app_with_db.config['access_control']['hawk_enabled'] = False
 
 
 def test_update_and_match(app):
@@ -46,6 +46,43 @@ def test_update_and_match(app):
                         {'id': '1', 'match_id': 2, 'similarity': '101000'},
                         {'id': '2', 'match_id': 1, 'similarity': '100000'},
                         {'id': '3', 'match_id': 2, 'similarity': '101000'},
+                    ]
+                },
+            ),
+        )
+
+
+def test_update_and_dnb_match(app):
+    with app.test_client() as app_context:
+        assert_search_api_response(
+            app_context=app_context,
+            params='dnb_match=true',
+            api='http://localhost:80/api/v1/company/update/',
+            body={
+                "descriptions": [
+                    {
+                        "id": '1',
+                        "datetime": "2010-01-01 00:00:00",
+                        "source": "dit.datahub",
+                        "companies_house_id": "11111111",
+                        "duns_number": "dun1",
+                        "company_name": "a",
+                    },
+                    {
+                        "id": '2',
+                        "datetime": "2010-01-02 00:00:00",
+                        "source": "dit.datahub",
+                        "companies_house_id": "22222222",
+                        "company_name": "b",
+                    },
+                ],
+            },
+            expected_response=(
+                200,
+                {
+                    'matches': [
+                        {'id': '1', 'match_id': 'dun1', 'similarity': '111000'},
+                        {'id': '2', 'match_id': None, 'similarity': '101000'},
                     ]
                 },
             ),

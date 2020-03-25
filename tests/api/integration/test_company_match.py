@@ -1,6 +1,6 @@
 import pytest
 
-from app.db.models import CompaniesHouseIDMapping, CompanyNameMapping
+from app.db.models import CompaniesHouseIDMapping, CompanyNameMapping, DunsNumberMapping
 from tests.api.support.utils import assert_search_api_response
 
 
@@ -25,6 +25,18 @@ def setup_function(app, add_mapping_db):
             },
         ],
         CompaniesHouseIDMapping,
+    )
+    add_mapping_db(
+        [
+            {
+                'duns_number': 'dun1',
+                'prev_match_id': 1,
+                'match_id': 1,
+                'source': 'dnb.companies.uk',
+                'datetime': '2019-01-02 00:00:00',
+            },
+        ],
+        DunsNumberMapping,
     )
     add_mapping_db(
         [
@@ -66,6 +78,30 @@ def test_match(app):
                         {'id': '1', 'match_id': 1, 'similarity': '100000'},
                         {'id': '2', 'match_id': 2, 'similarity': '100000'},
                         {'id': '3', 'match_id': None, 'similarity': '000000'},
+                    ]
+                },
+            ),
+        )
+
+
+def test_dnb_match(app):
+    with app.test_client() as app_context:
+        assert_search_api_response(
+            app_context=app_context,
+            params='dnb_match=true',
+            api='http://localhost:80/api/v1/company/match/',
+            body={
+                'descriptions': [
+                    {'id': '1', 'companies_house_id': '1rr31111', 'duns_number': 'dun1'},
+                    {'id': '2', 'companies_house_id': '1rr41111'},
+                ],
+            },
+            expected_response=(
+                200,
+                {
+                    'matches': [
+                        {'id': '1', 'match_id': 'dun1', 'similarity': '110000'},
+                        {'id': '2', 'match_id': None, 'similarity': '100000'},
                     ]
                 },
             ),

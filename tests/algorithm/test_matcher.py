@@ -278,10 +278,42 @@ def test_matcher_9(app_with_db):
     )
 
 
-def _assert_matches(descriptions, expected_matches, update=True, match=True):
+def test_matcher_dnb1(app_with_db):
+    """
+        Test dnb matching with no conflicting data
+    """
+    _assert_matches(
+        descriptions=[('inc', 'ch1', 'dun1', 'name1'), ('inc', 'ch2', None, 'name2')],
+        expected_matches=[('1', 'dun1', '111000'), ('2', None, '101000')],
+        dnb_match=True,
+    )
+
+
+def test_matcher_dnb2(app_with_db):
+    """
+        Test dnb matching with multiple dnb numbers in match group:
+            if dun_number present in desc select that one
+            else the most recent one is selected
+    """
+    _assert_matches(
+        descriptions=[
+            ('inc', 'ch1', 'dun1a', 'name1'),
+            ('inc', 'ch1', 'dun1b', 'name1'),
+            ('inc', 'ch1', None, 'name1'),
+        ],
+        expected_matches=[
+            ('1', 'dun1a', '111000'),  # select current
+            ('2', 'dun1b', '111000'),  # select current
+            ('3', 'dun1b', '101000'),  # select most recent
+        ],
+        dnb_match=True,
+    )
+
+
+def _assert_matches(descriptions, expected_matches, update=True, match=True, dnb_match=False):
     matcher = Matcher()
     json_data = _create_json(descriptions)
-    matches = matcher.match(json_data, update, match)
+    matches = matcher.match(json_data, update, match, dnb_match)
 
     assert matches == expected_matches
 
