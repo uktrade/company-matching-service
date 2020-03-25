@@ -5,46 +5,43 @@ from tests.api.support.utils import assert_search_api_response
 
 
 @pytest.fixture(scope='module', autouse=True)
-def setup_function(app, add_company_description_db, add_mapping_db):
+def setup_function(app, add_mapping_db):
     app.config['access_control']['hawk_enabled'] = False
-    add_company_description_db(
-        [
-            {
-                'id': 1,
-                'data_hash': 'hash1',
-                'source': 'dit.datahub',
-                'datetime': '2009-10-10 12:12:12',
-                'company_name': 'bad corp',
-                'companies_house_id': '1rr31111',
-            },
-            {
-                'id': 2,
-                'data_hash': 'hash2',
-                'source': 'dit.datahub',
-                'datetime': '2010-10-10 00:00:00',
-                'company_name': 'ugly corp',
-                'companies_house_id': '1rr41111',
-            },
-            {
-                'id': 3,
-                'data_hash': 'hash3',
-                'source': 'dit.export-wins',
-                'datetime': '2011-10-10 00:00:00',
-                'company_name': 'bad corp',
-            },
-        ]
-    )
     add_mapping_db(
         [
-            {'companies_house_id': '1rr31111', 'match_id': 1, 'id': 1},
-            {'companies_house_id': '1rr41111', 'match_id': 2, 'id': 2},
+            {
+                'companies_house_id': '1rr31111',
+                'prev_match_id': 1,
+                'match_id': 1,
+                'source': 'companies_house.companies',
+                'datetime': '2019-01-02 00:00:00',
+            },
+            {
+                'companies_house_id': '1rr41111',
+                'prev_match_id': 2,
+                'match_id': 2,
+                'source': 'companies_house.companies',
+                'datetime': '2019-01-02 00:00:00',
+            },
         ],
         CompaniesHouseIDMapping,
     )
     add_mapping_db(
         [
-            {'name_simplified': 'bad corp', 'match_id': 1, 'id': 3},
-            {'name_simplified': 'ugly corp', 'match_id': 2, 'id': 2},
+            {
+                'name_simplified': 'bad corp',
+                'prev_match_id': 1,
+                'match_id': 1,
+                'source': 'companies_house.companies',
+                'datetime': '2019-01-02 00:00:00',
+            },
+            {
+                'name_simplified': 'ugly corp',
+                'prev_match_id': 1,
+                'match_id': 2,
+                'source': 'companies_house.companies',
+                'datetime': '2019-01-02 00:00:00',
+            },
         ],
         CompanyNameMapping,
     )

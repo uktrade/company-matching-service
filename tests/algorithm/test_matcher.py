@@ -23,7 +23,11 @@ def test_matcher_1(app_with_db):
         Test matching with no conflicting data
     """
     _assert_matches(
-        descriptions=[('inc', 1, 'a', 'k'), ('inc', 2, 'b', 'l'), ('inc', 3, 'c', 'm')],
+        descriptions=[
+            ('inc', 'ch1', 'dun1', 'name1'),
+            ('inc', 'ch2', 'dun2', 'name2'),
+            ('inc', 'ch3', 'dun3', 'name3'),
+        ],
         expected_matches=[('1', 1, '111000'), ('2', 2, '111000'), ('3', 3, '111000')],
     )
 
@@ -35,7 +39,11 @@ def test_matcher_2(app_with_db):
 
     """
     _assert_matches(
-        descriptions=[('inc', 1, 'a', 'k'), ('inc', None, 'a', 'l'), ('inc', 2, 'a', 'k')],
+        descriptions=[
+            ('inc', 'ch1', 'dun1', 'name1'),
+            ('inc', None, 'dun1', 'name2'),
+            ('inc', 'ch2', 'dun1', 'name1'),
+        ],
         expected_matches=[('1', 1, '100000'), ('2', 2, '011000'), ('3', 2, '111000')],
     )
 
@@ -46,26 +54,138 @@ def test_matcher_3(app_with_db):
             most recent description should get priority
     """
     _assert_matches(
-        descriptions=[('2019-01-02 00:00:00', 1, 'a', 'k')], expected_matches=[('1', 1, '111000')],
+        descriptions=[('2019-01-02 00:00:00', 'ch1', 'dun1', 'name1')],
+        expected_matches=[('1', 1, '111000')],
     )
-    # the previous more recent description states that 'a' and 'k' are not part of this group
+    # the previous more recent description states that 'dun1' and 'name1' are not part of this group
     _assert_matches(
-        descriptions=[('2019-01-01 00:00:00', 2, 'a', 'k')], expected_matches=[('1', 2, '100000')],
+        descriptions=[('2019-01-01 00:00:00', 'ch2', 'dun1', 'name1')],
+        expected_matches=[('1', 2, '100000')],
+    )
+    # 'dun1' and 'name1' should still belong to group 1
+    _assert_matches(
+        descriptions=[('2019-01-03 00:00:00', None, 'dun1', 'name1')],
+        expected_matches=[('1', 1, '011000')],
+        update=False,
     )
 
 
-def test_matcher_4(app_with_db):
+def test_matcher_4a(app_with_db):
     """
         Test matching with conflicting data:
             1:['x', 'y', None] -> 2:[None, 'y', None] => 2 should have same group as 1
     """
     _assert_matches(
-        descriptions=[('inc', 1, 'a', None), ('inc', None, 'a', None)],
+        descriptions=[('inc', 'ch1', 'dun1', None), ('inc', None, 'dun1', None)],
         expected_matches=[('1', 1, '110000'), ('2', 1, '010000')],
     )
 
 
-def test_matcher_5a_batch(app_with_db):
+def test_matcher_4b(app_with_db):
+    """
+        Test matching with conflicting data:
+            'dun1' should be regrouped when older or newer
+            missing information is provided
+    """
+    _assert_matches(
+        descriptions=[('2019-01-03 00:00:00', None, 'dun1', None)],
+        expected_matches=[('1', 1, '010000')],
+    )
+    _assert_matches(
+        descriptions=[('2019-01-02 00:00:00', 'ch1', 'dun1', None)],
+        expected_matches=[('1', 2, '110000')],
+    )
+    _assert_matches(
+        descriptions=[('2019-01-04 00:00:00', None, 'dun1', None)],
+        expected_matches=[('1', 2, '010000')],
+        update=False,
+    )
+
+
+def test_matcher_4c(app_with_db):
+    """
+        Test matching with conflicting data:
+            'name1' should be regrouped when priority node 'dun1'
+            gets regrouped
+    """
+    _assert_matches(
+        descriptions=[('2019-01-01 00:00:00', None, 'dun1', 'name1')],
+        expected_matches=[('1', 1, '011000')],
+    )
+    _assert_matches(
+        descriptions=[('2019-01-02 00:00:00', 'ch1', 'dun1', None)],
+        expected_matches=[('1', 2, '110000')],
+    )
+    _assert_matches(
+        descriptions=[('2019-01-03 00:00:00', None, None, 'name1')],
+        expected_matches=[('1', 2, '001000')],
+        update=False,
+    )
+
+
+def test_matcher_4d(app_with_db):
+    """
+        Test matching with conflicting data:
+            'test@email1' should be regrouped when priority node 'dun1'
+            gets regrouped
+    """
+    _assert_matches(
+        descriptions=[('2019-01-01 00:00:00', None, 'dun1', None, 'test@email1')],
+        expected_matches=[('1', 1, '010100')],
+    )
+    _assert_matches(
+        descriptions=[('2019-01-02 00:00:00', 'ch1', 'dun1', None)],
+        expected_matches=[('1', 2, '110000')],
+    )
+    _assert_matches(
+        descriptions=[('2019-01-03 00:00:00', None, None, 'name1', 'test@email1')],
+        expected_matches=[('1', 2, '000100')],
+        update=False,
+    )
+
+
+def test_matcher_5a(app_with_db):
+    """
+        Test matching with conflicting data:
+            'name1' should be regrouped with priority node 'ch2'
+    """
+    _assert_matches(
+        descriptions=[('2019-01-01 00:00:00', None, 'dun1', 'name1')],
+        expected_matches=[('1', 1, '011000')],
+    )  # dun1, name1:1 -> dun1:1, name1:3
+    _assert_matches(
+        descriptions=[('2019-01-02 00:00:00', 'ch2', None, 'name1')],
+        expected_matches=[('1', 2, '101000')],
+    )  # ch2, name1:3
+    _assert_matches(
+        descriptions=[('2019-01-03 00:00:00', 'ch2', 'dun1', 'name1')],
+        expected_matches=[('1', 2, '101000')],
+        update=False,
+    )  # name1 part of group 2
+
+
+def test_matcher_5b(app_with_db):
+    """
+        Test matching with conflicting data:
+            'name1' should not be regrouped with priority node 'dun2'
+            because higher priority node has preference when data missing
+    """
+    _assert_matches(
+        descriptions=[('2019-01-01 00:00:00', 'ch1', 'dun1', 'name1')],
+        expected_matches=[('1', 1, '111000')],
+    )  # ch1, dun1, name1:1
+    _assert_matches(
+        descriptions=[('2019-01-02 00:00:00', None, 'dun2', 'name1')],
+        expected_matches=[('1', 2, '010000')],
+    )  # dun2:2, name1:1
+    _assert_matches(
+        descriptions=[('2019-01-03 00:00:00', 'ch1', 'dun1', 'name1')],
+        expected_matches=[('1', 1, '111000')],
+        update=False,
+    )  # name1 not part of group
+
+
+def test_matcher_6a_batch(app_with_db):
     """
         Test matching with conflicting data:
             batch mapping should give same match_ids but can have different similarity strings
@@ -73,48 +193,51 @@ def test_matcher_5a_batch(app_with_db):
     """
     _assert_matches(
         descriptions=[
-            ('inc', 1, 'a', 'k'),
-            ('inc', 1, 'b', None),
-            ('inc', 2, 'b', None),
-            ('inc', None, 'b', 'l'),
-            ('inc', None, 'c', 'k'),
+            ('inc', 'ch1', 'dun1', 'name1'),  # ch1, dun1, name1: 1
+            ('inc', 'ch1', 'dun2', None),  # ch1, dun2: 1 -> ch1:1, dun2:2
+            ('inc', 'ch2', 'dun2', None),  # ch2, dun2: 2
+            ('inc', None, 'dun2', 'name2'),  # dun2: 2, name2:2
+            ('inc', None, 'dun3', 'name1'),  # dun3: 3, name1:1 (priority node pref on missing data)
         ],
         expected_matches=[
-            ('1', 1, '110000'),
+            ('1', 1, '111000'),
             ('2', 1, '100000'),
             ('3', 2, '110000'),
             ('4', 2, '011000'),
-            ('5', 3, '011000'),
+            ('5', 3, '010000'),
         ],
     )
 
 
-def test_matcher_5b_row(app_with_db):
+def test_matcher_6b_row(app_with_db):
     """
         Test matching with conflicting data:
             batch mapping should give same match_ids but can have different similarity strings
 
     """
     _assert_matches(
-        descriptions=[('2019-01-01 00:00:00', 1, 'a', 'k')], expected_matches=[('1', 1, '111000')]
+        descriptions=[('2019-01-01 00:00:00', 'ch1', 'dun1', 'name1')],
+        expected_matches=[('1', 1, '111000')],
     )
     _assert_matches(
-        descriptions=[('2019-01-02 00:00:00', 1, 'b', None)], expected_matches=[('1', 1, '110000')]
+        descriptions=[('2019-01-02 00:00:00', 'ch1', 'dun2', None)],
+        expected_matches=[('1', 1, '110000')],
+    )  # different similarity string because next description not available yet
+    _assert_matches(
+        descriptions=[('2019-01-03 00:00:00', 'ch2', 'dun2', None)],
+        expected_matches=[('1', 2, '110000')],
     )
     _assert_matches(
-        descriptions=[('2019-01-03 00:00:00', 2, 'b', None)], expected_matches=[('1', 2, '110000')]
-    )
-    _assert_matches(
-        descriptions=[('2019-01-04 00:00:00', None, 'b', 'l')],
+        descriptions=[('2019-01-04 00:00:00', None, 'dun2', 'name2')],
         expected_matches=[('1', 2, '011000')],
     )
     _assert_matches(
-        descriptions=[('2019-01-05 00:00:00', None, 'c', 'k')],
-        expected_matches=[('1', 3, '011000')],
+        descriptions=[('2019-01-05 00:00:00', None, 'dun3', 'name1')],
+        expected_matches=[('1', 3, '010000')],
     )
 
 
-def test_matcher_6(app_with_db):
+def test_matcher_7(app_with_db):
     """
         Test matching with uncleaned cmds_ref
     """
@@ -127,7 +250,7 @@ def test_matcher_6(app_with_db):
     )
 
 
-def test_matcher_7(app_with_db):
+def test_matcher_8(app_with_db):
     """
         Test matching with contact email domain
     """
@@ -141,7 +264,7 @@ def test_matcher_7(app_with_db):
     )
 
 
-def test_matcher_8(app_with_db):
+def test_matcher_9(app_with_db):
     """
         Test matching with similar company names
     """
@@ -155,10 +278,11 @@ def test_matcher_8(app_with_db):
     )
 
 
-def _assert_matches(descriptions, expected_matches):
+def _assert_matches(descriptions, expected_matches, update=True, match=True):
     matcher = Matcher()
     json_data = _create_json(descriptions)
-    matches = matcher.match(json_data)
+    matches = matcher.match(json_data, update, match)
+
     assert matches == expected_matches
 
 

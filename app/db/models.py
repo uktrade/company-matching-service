@@ -1,6 +1,6 @@
 from flask import current_app as app
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import DDL, ForeignKey
+from sqlalchemy import DDL
 from sqlalchemy.sql import ClauseElement
 
 db = SQLAlchemy()
@@ -50,25 +50,6 @@ class BaseModel(db.Model):
 def create_sequences():
     stmt = f'CREATE SEQUENCE IF NOT EXISTS match_id_seq'
     app.db.engine.execute(DDL(stmt))
-    stmt = f'CREATE SEQUENCE IF NOT EXISTS company_description_id_seq'
-    app.db.engine.execute(DDL(stmt))
-
-
-class CompanyDescriptionModel(BaseModel):
-
-    __tablename__ = 'company_description'
-    __table_args__ = {'schema': 'public'}
-
-    id = _col(_int, primary_key=True)
-    data_hash = _col(_text, nullable=False, unique=True)
-    source = _col(_text, nullable=False)
-    datetime = _col(_dt, nullable=False)
-    companies_house_id = _col(_text)
-    duns_number = _col(_text)
-    company_name = _col(_text)
-    contact_email = _col(_text)
-    cdms_ref = _col(_text)
-    postcode = _col(_text)
 
 
 class CompaniesHouseIDMapping(BaseModel):
@@ -77,8 +58,10 @@ class CompaniesHouseIDMapping(BaseModel):
     __table_args__ = {'schema': 'public'}
 
     companies_house_id = _col(_text, primary_key=True)
-    match_id = _col(_int)
-    id = _col(_int, ForeignKey(CompanyDescriptionModel.id))
+    prev_match_id = _col(_int, nullable=False, index=True)
+    match_id = _col(_int, nullable=False, index=True)
+    source = _col(_text, nullable=False)
+    datetime = _col(_dt, nullable=False)
 
 
 class DunsNumberMapping(BaseModel):
@@ -87,8 +70,10 @@ class DunsNumberMapping(BaseModel):
     __table_args__ = {'schema': 'public'}
 
     duns_number = _col(_text, primary_key=True)
-    match_id = _col(_int)
-    id = _col(_int, ForeignKey(CompanyDescriptionModel.id))
+    prev_match_id = _col(_int, nullable=False, index=True)
+    match_id = _col(_int, nullable=False, index=True)
+    source = _col(_text, nullable=False)
+    datetime = _col(_dt, nullable=False)
 
 
 class CompanyNameMapping(BaseModel):
@@ -97,8 +82,10 @@ class CompanyNameMapping(BaseModel):
     __table_args__ = {'schema': 'public'}
 
     name_simplified = _col(_text, primary_key=True)
-    match_id = _col(_int)
-    id = _col(_int, ForeignKey(CompanyDescriptionModel.id))
+    prev_match_id = _col(_int, nullable=False, index=True)
+    match_id = _col(_int, nullable=False, index=True)
+    source = _col(_text, nullable=False)
+    datetime = _col(_dt, nullable=False)
 
 
 class ContactEmailMapping(BaseModel):
@@ -107,8 +94,10 @@ class ContactEmailMapping(BaseModel):
     __table_args__ = {'schema': 'public'}
 
     contact_email_domain = _col(_text, primary_key=True)
-    match_id = _col(_int)
-    id = _col(_int, ForeignKey(CompanyDescriptionModel.id))
+    prev_match_id = _col(_int, nullable=False, index=True)
+    match_id = _col(_int, nullable=False, index=True)
+    source = _col(_text, nullable=False)
+    datetime = _col(_dt, nullable=False)
 
 
 class CDMSRefMapping(BaseModel):
@@ -117,8 +106,10 @@ class CDMSRefMapping(BaseModel):
     __table_args__ = {'schema': 'public'}
 
     cdms_ref_cleaned = _col(_text, primary_key=True)
-    match_id = _col(_int)
-    id = _col(_int, ForeignKey(CompanyDescriptionModel.id))
+    prev_match_id = _col(_int, nullable=False, index=True)
+    match_id = _col(_int, nullable=False, index=True)
+    source = _col(_text, nullable=False)
+    datetime = _col(_dt, nullable=False)
 
 
 class PostcodeMapping(BaseModel):
@@ -127,8 +118,10 @@ class PostcodeMapping(BaseModel):
     __table_args__ = {'schema': 'public'}
 
     postcode = _col(_text, primary_key=True)
-    match_id = _col(_int)
-    id = _col(_int, ForeignKey(CompanyDescriptionModel.id))
+    prev_match_id = _col(_int, nullable=False, index=True)
+    match_id = _col(_int, nullable=False, index=True)
+    source = _col(_text, nullable=False)
+    datetime = _col(_dt, nullable=False)
 
 
 class HawkUsers(BaseModel):

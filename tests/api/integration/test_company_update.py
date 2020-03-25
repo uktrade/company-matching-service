@@ -1,6 +1,6 @@
 import pytest
 
-from app.db.models import CompanyDescriptionModel
+from app.db.models import CompaniesHouseIDMapping, CompanyNameMapping
 from tests.api.support.utils import assert_search_api_response
 
 
@@ -85,7 +85,9 @@ def test_update_twice_with_same_data(app):
             },
             expected_response=(204, None),
         )
-        assert app.db.session.query(CompanyDescriptionModel).count() == 3
+        assert app.db.session.query(CompaniesHouseIDMapping).count() == 2
+        assert app.db.session.query(CompanyNameMapping).count() == 2
+        app.db.session.commit()
         assert_search_api_response(
             app_context=app_context,
             api='http://localhost:80/api/v1/company/update/',
@@ -125,7 +127,9 @@ def test_update_twice_with_same_data(app):
                 },
             ),
         )
-        assert app.db.session.query(CompanyDescriptionModel).count() == 3
+        assert app.db.session.query(CompaniesHouseIDMapping).count() == 2
+        assert app.db.session.query(CompanyNameMapping).count() == 2
+        app.db.session.commit()
 
 
 def test_update(app):
