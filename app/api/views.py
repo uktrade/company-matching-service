@@ -86,16 +86,24 @@ def healthcheck():
 @ac.authorization_required
 def update():
     query = get_verified_data(request, COMPANY_UPDATE_BODY)
-    match = request.args.get('match', 'true')
+
+    dnb_match = request.args.get('dnb_match', 'false')
+    if dnb_match not in ['true', 'false']:
+        raise BadRequest('invalid dnb_match parameter. needs to be true or false')
+    dnb_match = dnb_match == 'true'
+
+    match = request.args.get('match', 'true' if not dnb_match else 'false')
     if match not in ['true', 'false']:
         raise BadRequest('invalid match parameter. needs to be true or false')
-    else:
-        match = match == 'true'
+    match = match == 'true'
+
+    if match and dnb_match:
+        raise BadRequest('only one of match and dnb_match parameter can be true')
 
     matcher = Matcher()
-    matches = matcher.match(query['descriptions'], update=True, match=match)
+    matches = matcher.match(query['descriptions'], update=True, match=match, dnb_match=dnb_match)
 
-    if match:
+    if match or dnb_match:
         result = {'matches': []}
         for row in matches:
             result['matches'].append({'id': row[0], 'match_id': row[1], 'similarity': row[2]})
@@ -110,9 +118,16 @@ def update():
 @ac.authorization_required
 def match():
     query = get_verified_data(request, COMPANY_MATCH_BODY)
-    result = {'matches': []}
+
+    dnb_match = request.args.get('dnb_match', 'false')
+    if dnb_match not in ['true', 'false']:
+        raise BadRequest('invalid dnb_match parameter. needs to be true or false')
+    dnb_match = dnb_match == 'true'
+
     matcher = Matcher()
-    matches = matcher.match(query['descriptions'], update=False)
+    matches = matcher.match(query['descriptions'], update=False, dnb_match=dnb_match)
+
+    result = {'matches': []}
     for row in matches:
         result['matches'].append({'id': row[0], 'match_id': row[1], 'similarity': row[2]})
     return jsonify(result)
