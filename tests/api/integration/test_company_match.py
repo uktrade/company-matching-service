@@ -41,14 +41,14 @@ def setup_function(app, add_mapping_db):
     add_mapping_db(
         [
             {
-                'name_simplified': 'bad corp',
+                'company_name': 'bad corp',
                 'prev_match_id': 1,
                 'match_id': 1,
                 'source': 'companies_house.companies',
                 'datetime': '2019-01-02 00:00:00',
             },
             {
-                'name_simplified': 'ugly corp',
+                'company_name': 'ugly corp',
                 'prev_match_id': 1,
                 'match_id': 2,
                 'source': 'companies_house.companies',
@@ -59,19 +59,20 @@ def setup_function(app, add_mapping_db):
     )
 
 
-def test_match(app):
-    with app.test_client() as app_context:
-        assert_search_api_response(
-            app_context=app_context,
-            api='http://localhost:80/api/v1/company/match/',
-            body={
+@pytest.mark.parametrize(
+    'params,body,expected_response',
+    (
+        #   Test match
+        (
+            None,
+            {
                 'descriptions': [
                     {'id': '1', 'companies_house_id': '1rr31111', 'company_name': 'bad corp'},
                     {'id': '2', 'companies_house_id': '1rr41111'},
                     {'id': '3', 'companies_house_id': '11111111', 'company_name': 'new corp'},
                 ],
             },
-            expected_response=(
+            (
                 200,
                 {
                     'matches': [
@@ -81,22 +82,17 @@ def test_match(app):
                     ]
                 },
             ),
-        )
-
-
-def test_dnb_match(app):
-    with app.test_client() as app_context:
-        assert_search_api_response(
-            app_context=app_context,
-            params='dnb_match=true',
-            api='http://localhost:80/api/v1/company/match/',
-            body={
+        ),
+        #   Test dnb match
+        (
+            'dnb_match=true',
+            {
                 'descriptions': [
                     {'id': '1', 'companies_house_id': '1rr31111', 'duns_number': 'dun1'},
                     {'id': '2', 'companies_house_id': '1rr41111'},
                 ],
             },
-            expected_response=(
+            (
                 200,
                 {
                     'matches': [
@@ -105,47 +101,29 @@ def test_dnb_match(app):
                     ]
                 },
             ),
-        )
-
-
-def test_match_missing_required_attribute(app):
-    with app.test_client() as app_context:
-        assert_search_api_response(
-            app_context=app_context,
-            api='http://localhost:80/api/v1/company/match/',
-            body={
-                'descriptions': [{'companies_house_id': '1rr31111', 'company_name': 'bad corp'}],
-            },
-            expected_response=(400, {'error': "'id' is a required property"}),
-        )
-
-
-def test_match_at_least_one_description_attribute_required(app):
-    with app.test_client() as app_context:
-        assert_search_api_response(
-            app_context=app_context,
-            api='http://localhost:80/api/v1/company/match/',
-            body={'descriptions': [{'id': '1', 'companies_house_id': '1rr31111'}, {'id': '2'}]},
-            expected_response=(400, {'error': "'company_name' is a required property"}),
-        )
-
-
-def test_match_invalid_contact_email(app):
-    with app.test_client() as app_context:
-        assert_search_api_response(
-            app_context=app_context,
-            api='http://localhost:80/api/v1/company/match/',
-            body={'descriptions': [{'id': '1', 'contact_email': 'invalid'}]},
-            expected_response=(400, {'error': "'invalid' does not match '[^@]+@[^@]+\\\\.[^@]+'"}),
-        )
-
-
-def test_update_invalid_companies_house_id(app):
-    with app.test_client() as app_context:
-        assert_search_api_response(
-            app_context=app_context,
-            api='http://localhost:80/api/v1/company/update/',
-            body={
+        ),
+        #   Test missing required attribute
+        (
+            None,
+            {'descriptions': [{'companies_house_id': '1rr31111', 'company_name': 'bad corp'}]},
+            (400, {'error': "'id' is a required property"}),
+        ),
+        #   Test at least one description attribute required
+        (
+            None,
+            {'descriptions': [{'id': '1', 'companies_house_id': '1rr31111'}, {'id': '2'}]},
+            (400, {'error': "'company_name' is a required property"}),
+        ),
+        #   Test invalid contact email
+        (
+            None,
+            {'descriptions': [{'id': '1', 'contact_email': 'invalid'}]},
+            (400, {'error': "'invalid' does not match '[^@]+@[^@]+\\\\.[^@]+'"}),
+        ),
+        #   Test invalid companies_house_id
+        (
+            None,
+            {
                 'descriptions': [
                     {
                         'id': '1',
@@ -155,5 +133,16 @@ def test_update_invalid_companies_house_id(app):
                     },
                 ],
             },
-            expected_response=(400, {'error': "'1234567' is too short"}),
+            (400, {'error': "'1234567' is too short"}),
+        ),
+    ),
+)
+def test_match(params, body, expected_response, app):
+    with app.test_client() as app_context:
+        assert_search_api_response(
+            app_context=app_context,
+            api='http://localhost:80/api/v1/company/match/',
+            params=params,
+            body=body,
+            expected_response=expected_response,
         )

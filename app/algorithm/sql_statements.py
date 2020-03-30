@@ -41,9 +41,9 @@ _general_name_simplification = f"""
 _field_to_mapping_table = [
     ('companies_house_id', CompaniesHouseIDMapping.__tablename__),
     ('duns_number', DunsNumberMapping.__tablename__),
-    ('name_simplified', CompanyNameMapping.__tablename__),
-    ('contact_email_domain', ContactEmailMapping.__tablename__),
-    ('cdms_ref_cleaned', CDMSRefMapping.__tablename__),
+    ('company_name', CompanyNameMapping.__tablename__),
+    ('contact_email', ContactEmailMapping.__tablename__),
+    ('cdms_ref', CDMSRefMapping.__tablename__),
     ('postcode', PostcodeMapping.__tablename__),
 ]
 
@@ -60,10 +60,7 @@ def json_to_tmp_table(json_data):
             company_name text,
             contact_email text,
             cdms_ref text,
-            postcode text,
-            name_simplified text,
-            cdms_ref_cleaned text,
-            contact_email_domain text
+            postcode text
         );
     """
     db_utils.execute_statement(stmt)
@@ -77,31 +74,27 @@ def json_to_tmp_table(json_data):
             company_name,
             contact_email,
             cdms_ref,
-            postcode,
-            name_simplified,
-            cdms_ref_cleaned,
-            contact_email_domain
+            postcode
         )
         SELECT
             id,
             source,
             datetime,
-            companies_house_id,
+            case when
+                lower(companies_house_id) = ANY('{{notregis, not reg,n/a, none, 0, ""}}'::text[])
+            then null else lower(companies_house_id) end,
             duns_number,
-            company_name,
-            contact_email,
-            cdms_ref,
-            postcode,
             {_general_name_simplification},
+            lower(split_part(contact_email, '@', 2)),
             regexp_replace(cdms_ref, '\\D','','g'),
-            lower(split_part(contact_email, '@', 2)) AS contact_email_domain
-
+            lower(replace(postcode, ' ', ''))
         FROM json_populate_recordset(null::tmp, %s);
     """
     db_utils.execute_statement(stmt, (json.dumps(json_data),))
 
 
 def update_mappings():
+    db_utils.execute_statement("SET statement_timeout TO '10h' ")
     to_check = []
     for current_f2mt in _field_to_mapping_table:
         current_field = current_f2mt[0]
@@ -256,6 +249,6 @@ def get_match_ids(dnb_match=False):
             )}
     ) SQ
     {f'''left join duns_number_mapping on duns_number_mapping.match_id = aggr_match_id
-    order by id, duns_number_mapping.datetime desc''' if dnb_match else ''}
+    order by id asc, duns_number_mapping.datetime desc''' if dnb_match else 'order by id asc'}
     """
     return db_utils.execute_query(stmt)
