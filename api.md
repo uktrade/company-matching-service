@@ -6,6 +6,8 @@ Matches companies between different datasets
 
 + Parameters
 
+    + **dnb_match** If true, the provided data will be matched against a D&B number instead of a match_id
+
 + Body
         
         {
@@ -80,6 +82,8 @@ Matches companies between different datasets
 + Parameters
 
     + **match** If false, the provided data will not be matched and a 204 will be returned.
+    + **dnb_match** If true, the provided data will be matched against a D&B number instead of a match_id
+
     
 + Body
         
