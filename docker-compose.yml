@@ -13,6 +13,8 @@ services:
 
   cms_postgres:
     image: "postgres"
+    env_file:
+      - ${ENV_FILE:-.env}
     ports:
       - "5430:5432"
 

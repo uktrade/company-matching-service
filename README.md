@@ -18,7 +18,10 @@ The backend is built in Python using the Flask framework. Authentication is impl
 #### Config
 
 ##### Using docker-compose
-Place environment variables in .env file.
+1. Copy `.envs/docker.env` to `.env`
+2. `docker-compose build`
+3. `docker-compose up`
+4. Go to http://localhost:5080/healthcheck
 
 ##### Using host machine
 Config variables can be specified in a few ways and are loaded using the following order of priority:
@@ -35,11 +38,14 @@ Config variables can be specified in a few ways and are loaded using the followi
 
 ## Commands
 
+#### If using docker enter the running web container to run commands
+`docker exec -ti data_cms_web_1 /bin/bash`
+
 #### Initialize tables
-`python app/manage.py dev db --create_tables`
+`python manage.py dev db --create_tables`
 
 #### Add hawk users
-`python app/manage.py dev add_hawk_user --client_id=<client_id> --client_key=<client_key> --client_scope=* --description=data-flow`
+`python manage.py dev add_hawk_user --client_id=<client_id> --client_key=<client_key> --client_scope=* --description=data-flow`
 
 ## API
 
