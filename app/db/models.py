@@ -1,6 +1,6 @@
 from flask import current_app as app
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import ForeignKey, DDL
+from sqlalchemy import DDL, Index
 from sqlalchemy.sql import ClauseElement
 
 db = SQLAlchemy()
@@ -9,6 +9,7 @@ sql_alchemy = db
 # aliases
 _sa = sql_alchemy
 _col = db.Column
+_array = db.ARRAY
 _text = db.Text
 _int = db.Integer
 _dt = db.DateTime
@@ -49,81 +50,118 @@ class BaseModel(db.Model):
 def create_sequences():
     stmt = f'CREATE SEQUENCE IF NOT EXISTS match_id_seq'
     app.db.engine.execute(DDL(stmt))
-    stmt = f'CREATE SEQUENCE IF NOT EXISTS company_description_id_seq'
+
+
+def drop_sequences():
+    stmt = 'DROP SEQUENCE IF EXISTS match_id_seq CASCADE'
     app.db.engine.execute(DDL(stmt))
-
-
-class CompanyDescriptionModel(BaseModel):
-
-    __tablename__ = 'company_description'
-    __table_args__ = {'schema': 'public'}
-
-    id = _col(_int, primary_key=True)
-    source = _col(_text, nullable=False)
-    datetime = _col(_dt, nullable=False)
-    companies_house_id = _col(_text)
-    duns_number = _col(_text)
-    company_name = _col(_text)
-    contact_email = _col(_text)
-    cdms_ref = _col(_text)
-    postcode = _col(_text)
 
 
 class CompaniesHouseIDMapping(BaseModel):
 
     __tablename__ = 'companies_house_id_mapping'
-    __table_args__ = {'schema': 'public'}
 
     companies_house_id = _col(_text, primary_key=True)
-    match_id = _col(_int)
-    id = _col(_int, ForeignKey(CompanyDescriptionModel.id))
+    prev_match_id = _col(_int, nullable=False)
+    match_id = _col(_int, nullable=False)
+    source = _col(_text, nullable=False)
+    datetime = _col(_dt, nullable=False)
+
+    __table_args__ = (
+        Index('companies_house_id_idx', 'companies_house_id', postgresql_using='hash'),
+    )
 
 
 class DunsNumberMapping(BaseModel):
 
     __tablename__ = 'duns_number_mapping'
-    __table_args__ = {'schema': 'public'}
 
     duns_number = _col(_text, primary_key=True)
-    match_id = _col(_int)
-    id = _col(_int, ForeignKey(CompanyDescriptionModel.id))
+    prev_match_id = _col(_int, nullable=False)
+    match_id = _col(_int, nullable=False)
+    source = _col(_text, nullable=False)
+    datetime = _col(_dt, nullable=False)
+
+    __table_args__ = (Index('duns_number_idx', 'duns_number', postgresql_using='hash'),)
 
 
 class CompanyNameMapping(BaseModel):
 
     __tablename__ = 'company_name_mapping'
-    __table_args__ = {'schema': 'public'}
 
-    name_simplified = _col(_text, primary_key=True)
-    match_id = _col(_int)
-    id = _col(_int, ForeignKey(CompanyDescriptionModel.id))
+    company_name = _col(_text, primary_key=True)
+    prev_match_id = _col(_int, nullable=False)
+    match_id = _col(_int, nullable=False)
+    source = _col(_text, nullable=False)
+    datetime = _col(_dt, nullable=False)
+
+    __table_args__ = (Index('company_name_idx', 'company_name', postgresql_using='hash'),)
 
 
 class ContactEmailMapping(BaseModel):
 
     __tablename__ = 'contact_email_mapping'
-    __table_args__ = {'schema': 'public'}
 
-    contact_email_domain = _col(_text, primary_key=True)
-    match_id = _col(_int)
-    id = _col(_int, ForeignKey(CompanyDescriptionModel.id))
+    contact_email = _col(_text, primary_key=True)
+    prev_match_id = _col(_int, nullable=False)
+    match_id = _col(_int, nullable=False)
+    source = _col(_text, nullable=False)
+    datetime = _col(_dt, nullable=False)
+
+    __table_args__ = (Index('contact_email_idx', 'contact_email', postgresql_using='hash'),)
 
 
 class CDMSRefMapping(BaseModel):
 
     __tablename__ = 'cdms_ref_mapping'
-    __table_args__ = {'schema': 'public'}
 
-    cdms_ref_cleaned = _col(_text, primary_key=True)
-    match_id = _col(_int)
-    id = _col(_int, ForeignKey(CompanyDescriptionModel.id))
+    cdms_ref = _col(_text, primary_key=True)
+    prev_match_id = _col(_int, nullable=False)
+    match_id = _col(_int, nullable=False)
+    source = _col(_text, nullable=False)
+    datetime = _col(_dt, nullable=False)
+
+    __table_args__ = (Index('cdms_ref_idx', 'cdms_ref', postgresql_using='hash'),)
 
 
 class PostcodeMapping(BaseModel):
 
     __tablename__ = 'postcode_mapping'
-    __table_args__ = {'schema': 'public'}
 
     postcode = _col(_text, primary_key=True)
-    match_id = _col(_int)
-    id = _col(_int, ForeignKey(CompanyDescriptionModel.id))
+    prev_match_id = _col(_int, nullable=False)
+    match_id = _col(_int, nullable=False)
+    source = _col(_text, nullable=False)
+    datetime = _col(_dt, nullable=False)
+
+    __table_args__ = (Index('postcode_idx', 'postcode', postgresql_using='hash'),)
+
+
+class HawkUsers(BaseModel):
+
+    __tablename__ = 'hawk_users'
+    __table_args__ = {'schema': 'public'}
+
+    id = _col(_text, primary_key=True)
+    key = _col(_text)
+    scope = _col(_array(_text))
+    description = _col(_text)
+
+    @classmethod
+    def get_client_key(cls, client_id):
+        query = _sa.session.query(cls.key).filter(cls.id == client_id)
+        result = query.first()
+        return result[0] if result else None
+
+    @classmethod
+    def get_client_scope(cls, client_id):
+        query = _sa.session.query(cls.scope).filter(cls.id == client_id)
+        result = query.first()
+        return result[0] if result else None
+
+    @classmethod
+    def add_user(cls, client_id, client_key, client_scope, description):
+        cls.get_or_create(
+            id=client_id,
+            defaults={'key': client_key, 'scope': client_scope, 'description': description},
+        )

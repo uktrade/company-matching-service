@@ -13,7 +13,7 @@ aliases:
     CMS_AC_ISSUERS_1_ISSUER: circle
     CMS_AC_ISSUERS_1_KEY: circle_test
     CMS_AC_ISSUERS_1_SCOPE: '*'
-    CMS_CACHE_HOST: localhost
+    CMS_CACHE_HOST: redis://localhost
     CMS_CACHE_PORT: 6379
     CMS_CACHE_PWD: ''
     CMS_DB_HOST: localhost
@@ -108,6 +108,29 @@ jobs:
           path: test-results/report.xml
       - store_artifacts:
           path: test-results/report.xml
+
+  format_checks:
+    docker:
+      - image: *python_version
+      - image: *postgresql_version
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: circle_test
+      - image: scality/s3server:latest
+      - image: redis:4
+    working_directory: ~/cms
+    steps:
+      - checkout
+      - *restore_pytest_cache
+      - run:
+          environment:
+            *cms_envs
+          name: run format checks
+          command: |
+            . venv/bin/activate
+            source ~/miniconda/bin/activate
+            source activate cms
+            make check
 
 workflows:
   version: 2

@@ -1,0 +1,25 @@
+version: '3'
+services:
+  cms_web:
+    build: .
+    env_file:
+      - ${ENV_FILE:-.env}
+    ports:
+      - ${PORT:-5080}:5080
+    depends_on:
+      - cms_postgres
+    volumes:
+      - .:/app
+
+  cms_postgres:
+    image: "postgres"
+    env_file:
+      - ${ENV_FILE:-.env}
+    ports:
+      - "5430:5432"
+
+  cms_redis:
+    image: redis:3.2
+    restart: always
+    ports:
+      - "6370:6379"
