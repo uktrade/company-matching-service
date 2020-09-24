@@ -1,15 +1,17 @@
+import logging
+
 import sqlalchemy
 
 from app.db.models import sql_alchemy
 
 
-def execute_query(query, raise_if_fail=False):
-    result_set = execute_statement(query, raise_if_fail)
+def execute_query(query, raise_if_fail=True):
+    result_set = execute_statement(query, None, raise_if_fail)
     rows = result_set.fetchall()
     return rows
 
 
-def execute_statement(stmt, data=None, raise_if_fail=False):
+def execute_statement(stmt, data=None, raise_if_fail=True):
     connection = sql_alchemy.engine.connect()
     transaction = connection.begin()
     try:
@@ -19,7 +21,7 @@ def execute_statement(stmt, data=None, raise_if_fail=False):
         return status
     except sqlalchemy.exc.ProgrammingError as err:
         transaction.rollback()
-        print('DB ERROR', err.orig)
+        logging.error(f'db error: {str(err)}')
         if raise_if_fail:
             raise err
         connection.close()
