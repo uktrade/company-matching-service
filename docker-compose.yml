@@ -26,4 +26,5 @@ services:
 
 networks:
   default:
-    name: data-infrastructure-shared-network
+    external:
+      name: data-infrastructure-shared-network
