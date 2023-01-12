@@ -40,7 +40,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            wget https://repo.continuum.io/miniconda/Miniconda3-4.5.12-Linux-x86_64.sh -O ~/miniconda.sh
+            wget https://repo.anaconda.com/miniconda/Miniconda2-4.6.14-Linux-x86_64.sh -O ~/miniconda.sh
             bash ~/miniconda.sh -b -u -p ~/miniconda
             source ~/miniconda/bin/activate
             conda env create -q --force -f environment.yml
