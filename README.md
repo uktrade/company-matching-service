@@ -1,6 +1,7 @@
 # Company Matching Service
 
-Service to match companies between different data sets
+Service to match companies between different data sets. 
+These instructions are aimed at _administrators_ of the service. For help on using the outputs of the service in order to match records in different datasets please visit the [Data Services Help Centre](https://data-services-help.trade.gov.uk/data-workspace/data-documentation/company-matching-service/)
 
 ## Installation
 The backend is built in Python using the Flask framework. Authentication is implemented using Hawk.
