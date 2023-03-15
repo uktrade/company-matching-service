@@ -7,13 +7,9 @@ ARG PATH="/root/miniconda3/bin:${PATH}"
 
 ADD scripts scripts
 RUN scripts/install_dockerize.sh
-RUN scripts/install_miniconda.sh
 
-ADD environment.yml /tmp/environment.yml
-RUN conda env create -f /tmp/environment.yml
-# Pull the environment name out of the environment.yml
-RUN echo "source activate $(head -1 /tmp/environment.yml | cut -d' ' -f2)" > ~/.bashrc
-
+ADD requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt
 
 WORKDIR /app
 
