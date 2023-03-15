@@ -1,11 +1,11 @@
 version: 2
 aliases:
-  - &python_version circleci/python:3.6.8
+  - &python_version circleci/python:3.6.9
   - &postgresql_version circleci/postgres:10.5
   - &restore_pytest_cache
       restore_cache:
         name: restoring python packages from cache
-        key: cms-{{ .Branch }}-{{ checksum "environment.yml" }}
+        key: cms-{{ .Branch }}-{{ checksum "requirements.txt" }}
   - &cms_envs
     PIPENV_VENV_IN_PROJECT: true
     DATABASE_URL: postgresql://postgres@localhost/circle_test?sslmode=disable
@@ -30,26 +30,19 @@ jobs:
     working_directory: ~/cms
     steps:
       - checkout
-      - run: sudo chown -R circleci:circleci /usr/local/bin
-      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
       - restore_cache:
           keys:
-          - cms-{{ .Branch }}-{{ checksum "environment.yml" }}-{{ .Environment.CACHE_VERSION }}
+          - cms-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ .Environment.CACHE_VERSION }}
       - run:
           name: install dependencies
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            wget https://repo.anaconda.com/miniconda/Miniconda2-4.6.14-Linux-x86_64.sh -O ~/miniconda.sh
-            bash ~/miniconda.sh -b -u -p ~/miniconda
-            source ~/miniconda/bin/activate
-            conda env create -q --force -f environment.yml
+            pip install -r requirements.txt
       - save_cache:
           paths:
             - venv
-            - ../miniconda
-            - ../.conda
-          key: cms-{{ .Branch }}-{{ checksum "environment.yml" }}-{{ .Environment.CACHE_VERSION }}
+          key: cms-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ .Environment.CACHE_VERSION }}
 
   unit_test:
     docker:
@@ -70,8 +63,6 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            source ~/miniconda/bin/activate
-            source activate cms
             make unit-test
       - store_test_results:
           path: test-results/report.xml
@@ -101,8 +92,6 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            source ~/miniconda/bin/activate
-            source activate cms
             make integration-test
       - store_test_results:
           path: test-results/report.xml
@@ -128,8 +117,6 @@ jobs:
           name: run format checks
           command: |
             . venv/bin/activate
-            source ~/miniconda/bin/activate
-            source activate cms
             make check
 
 workflows:
