@@ -94,13 +94,12 @@ six==1.16.0
     # via
     #   jsonschema
     #   mohawk
-    #   sqlalchemy-utils
 sqlalchemy==2.0.7
     # via
     #   -r requirements.in
     #   flask-sqlalchemy
     #   sqlalchemy-utils
-sqlalchemy-utils==0.33.9
+sqlalchemy-utils==0.40.0
     # via -r requirements.in
 strict-rfc3339==0.7
     # via -r requirements.in
