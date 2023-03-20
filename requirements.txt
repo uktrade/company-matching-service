@@ -27,7 +27,7 @@ flake8==3.7.9
     # via -r requirements.in
 flake8-import-order==0.18.1
     # via -r requirements.in
-flask==1.1.1
+flask==2.2.3
     # via
     #   -r requirements.in
     #   flask-script
@@ -39,7 +39,9 @@ flask-sqlalchemy==2.4.1
 gunicorn==19.9.0
     # via -r requirements.in
 importlib-metadata==4.8.3
-    # via jsonschema
+    # via
+    #   flask
+    #   jsonschema
 itsdangerous==2.0.1
     # via flask
 jinja2==3.0.3
