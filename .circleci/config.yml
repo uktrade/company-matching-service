@@ -1,6 +1,6 @@
 version: 2
 aliases:
-  - &python_version circleci/python:3.6.9
+  - &python_version circleci/python:3.8
   - &postgresql_version circleci/postgres:10.5
   - &restore_pytest_cache
       restore_cache:
