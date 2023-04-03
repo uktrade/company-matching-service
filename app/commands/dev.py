@@ -3,7 +3,7 @@ import sqlalchemy_utils
 from flask import current_app as app
 from flask.cli import AppGroup, with_appcontext
 
-from app.db.models import create_sequences, drop_sequences, HawkUsers
+from app.db.models import HawkUsers
 
 cmd_group = AppGroup('dev', help='Commands to build database')
 
@@ -43,11 +43,9 @@ def db(create, drop, drop_tables, create_tables, recreate_tables):
             sqlalchemy_utils.create_database(db_url, encoding='utf8')
         if drop_tables or recreate_tables:
             click.echo('Drop DB tables')
-            drop_sequences()
             app.db.drop_all()
         if create or create_tables or recreate_tables:
             click.echo('Creating DB tables')
-            create_sequences()
             app.db.create_all()
 
 

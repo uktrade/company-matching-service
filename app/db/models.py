@@ -1,6 +1,6 @@
 from flask import current_app as app
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import DDL, Index
+from sqlalchemy import DDL, Index, Sequence, text
 from sqlalchemy.sql import ClauseElement
 
 db = SQLAlchemy()
@@ -36,7 +36,8 @@ class BaseModel(db.Model):
         :param kwargs: fields to query for an object
         :return: (Object, boolean) (Object, created)
         """
-        instance = _sa.session.query(cls).filter_by(**kwargs).first()
+
+        instance = cls.query.filter_by(**kwargs).first()
         if instance:
             return instance, False
         else:
@@ -45,16 +46,6 @@ class BaseModel(db.Model):
             instance = cls(**params)
             instance.save()
             return instance, True
-
-
-def create_sequences():
-    stmt = f'CREATE SEQUENCE IF NOT EXISTS match_id_seq'
-    app.db.engine.execute(DDL(stmt))
-
-
-def drop_sequences():
-    stmt = 'DROP SEQUENCE IF EXISTS match_id_seq CASCADE'
-    app.db.engine.execute(DDL(stmt))
 
 
 class CompaniesHouseIDMapping(BaseModel):
@@ -70,6 +61,8 @@ class CompaniesHouseIDMapping(BaseModel):
     __table_args__ = (
         Index('companies_house_id_idx', 'companies_house_id', postgresql_using='hash'),
     )
+
+Sequence('match_id_seq', metadata=CompaniesHouseIDMapping.metadata)
 
 
 class DunsNumberMapping(BaseModel):

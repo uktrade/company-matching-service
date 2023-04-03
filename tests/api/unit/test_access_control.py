@@ -45,10 +45,10 @@ class TestAuthentication:
         self.client_key = 'secret1'
         self.client_scope = ['*']
         self.description = 'test authentication'
-        HawkUsers.add_user(
-            client_id=self.client_id,
-            client_key=self.client_key,
-            client_scope=self.client_scope,
+        HawkUsers.get_or_create(
+            id=self.client_id,
+            key=self.client_key,
+            scope=self.client_scope,
             description=self.description,
         )
 

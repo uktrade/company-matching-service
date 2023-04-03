@@ -1,9 +1,11 @@
 import os
+from threading import get_ident
 
 import certifi
 import redis
 from flask import Flask, json
 from sqlalchemy.engine.url import make_url
+from sqlalchemy.orm import scoped_session
 
 from app import config
 from app.api.views import api
@@ -62,8 +64,6 @@ def _create_base_app():
 
 def _register_components(flask_app):
     from app.db.models import sql_alchemy
-
-    sql_alchemy.session = sql_alchemy.create_scoped_session()
     sql_alchemy.init_app(flask_app)
     flask_app.db = sql_alchemy
     flask_app.register_blueprint(api)
@@ -73,9 +73,12 @@ def _register_components(flask_app):
 
 
 def _create_sql_alchemy_connection_str(cfg, db_name=None):
-    url = make_url(cfg)
     if db_name:
-        url.database = db_name
+        if '?' in cfg:
+            cfg = cfg.split('?')[0] + '/' + db_name + cfg.split('?')[-1]
+        else:
+            cfg += f'/{db_name}'
+    url = make_url(cfg)
     return url
 
 
