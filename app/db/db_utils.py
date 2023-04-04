@@ -15,7 +15,7 @@ def execute_statement(stmt, data=None, raise_if_fail=True):
     connection = sql_alchemy.engine.connect()
     transaction = connection.begin()
     try:
-        status = connection.execute(stmt, data)
+        status = connection.execute(text(stmt), data)
         transaction.commit()
         connection.close()
         return status
