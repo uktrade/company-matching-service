@@ -49,12 +49,14 @@ class BaseModel(db.Model):
 
 def create_sequences():
     stmt = f'CREATE SEQUENCE IF NOT EXISTS match_id_seq'
-    app.db.engine.execute(DDL(stmt))
+    with app.db.engine.connect() as conn:
+        conn.execute(DDL(stmt))
 
 
 def drop_sequences():
     stmt = 'DROP SEQUENCE IF EXISTS match_id_seq CASCADE'
-    app.db.engine.execute(DDL(stmt))
+    with app.db.engine.connect() as conn:
+        conn.execute(DDL(stmt))
 
 
 class CompaniesHouseIDMapping(BaseModel):
