@@ -2,8 +2,9 @@ import click
 import sqlalchemy_utils
 from flask import current_app as app
 from flask.cli import AppGroup, with_appcontext
+from sqlalchemy import text
 
-from app.db.models import create_sequences, drop_sequences, HawkUsers
+from app.db.models import HawkUsers
 
 cmd_group = AppGroup('dev', help='Commands to build database')
 
@@ -43,11 +44,13 @@ def db(create, drop, drop_tables, create_tables, recreate_tables):
             sqlalchemy_utils.create_database(db_url, encoding='utf8')
         if drop_tables or recreate_tables:
             click.echo('Drop DB tables')
-            drop_sequences()
+            with app.db.engine.connect() as conn:
+                conn.execute(text('DROP SEQUENCE IF EXISTS match_id_seq CASCADE'))
             app.db.drop_all()
         if create or create_tables or recreate_tables:
             click.echo('Creating DB tables')
-            create_sequences()
+            with app.db.engine.connect() as conn:
+                conn.execute(text('CREATE SEQUENCE IF NOT EXISTS match_id_seq'))
             app.db.create_all()
 
 

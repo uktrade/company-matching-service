@@ -47,18 +47,6 @@ class BaseModel(db.Model):
             return instance, True
 
 
-def create_sequences():
-    stmt = f'CREATE SEQUENCE IF NOT EXISTS match_id_seq'
-    with app.db.engine.connect() as conn:
-        conn.execute(DDL(stmt))
-
-
-def drop_sequences():
-    stmt = 'DROP SEQUENCE IF EXISTS match_id_seq CASCADE'
-    with app.db.engine.connect() as conn:
-        conn.execute(DDL(stmt))
-
-
 class CompaniesHouseIDMapping(BaseModel):
 
     __tablename__ = 'companies_house_id_mapping'

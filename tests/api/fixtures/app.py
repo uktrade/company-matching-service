@@ -2,9 +2,9 @@ import datetime
 
 import pytest
 import sqlalchemy_utils
+from sqlalchemy import text
 
 from app import application
-from app.db.models import create_sequences
 
 TESTING_DB_NAME_TEMPLATE = 'cms_test_{}'
 
@@ -32,7 +32,8 @@ def app_with_db(app):
     app.db.engine.dispose()
     sqlalchemy_utils.create_database(app.config['SQLALCHEMY_DATABASE_URI'],)
     app.db.create_all()
-    create_sequences()
+    with app.db.engine.connect() as conn:
+        conn.execute(text('CREATE SEQUENCE IF NOT EXISTS match_id_seq'))
     yield app
     app.db.session.close()
     app.db.session.remove()
@@ -46,7 +47,8 @@ def app_with_db_module(app):
     app.db.engine.dispose()
     sqlalchemy_utils.create_database(app.config['SQLALCHEMY_DATABASE_URI'],)
     app.db.create_all()
-    create_sequences()
+    with app.db.engine.connect() as conn:
+        conn.execute(text('CREATE SEQUENCE IF NOT EXISTS match_id_seq'))
     yield app
     app.db.session.close()
     app.db.session.remove()
