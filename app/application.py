@@ -78,11 +78,13 @@ def _register_components(flask_app):
 
 
 def _create_sql_alchemy_connection_str(cfg, db_name=None):
-    url = make_url(cfg)
     if db_name:
-        url.database = db_name
+        if '?' in cfg:
+            cfg = cfg.split('?')[0] + '/' + db_name + cfg.split('?')[-1]
+        else:
+            cfg += f'/{db_name}'
+    url = make_url(cfg)
     return url
-
 
 def _load_uri_from_vcap_services(service_type):
     if 'VCAP_SERVICES' in os.environ:
