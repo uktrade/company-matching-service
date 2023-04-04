@@ -1,9 +1,11 @@
 import os
+from threading import get_ident
 
 import certifi
 import redis
 from flask import Flask, json
 from sqlalchemy.engine.url import make_url
+from sqlalchemy.orm import scoped_session
 
 from app import config
 from app.api.views import api
@@ -63,7 +65,10 @@ def _create_base_app():
 def _register_components(flask_app):
     from app.db.models import sql_alchemy
 
-    sql_alchemy.session = sql_alchemy.create_scoped_session()
+    sql_alchemy.session = scoped_session(
+        sql_alchemy.create_session({}),
+        scopefunc=get_ident
+    )
     sql_alchemy.init_app(flask_app)
     flask_app.db = sql_alchemy
     flask_app.register_blueprint(api)
