@@ -88,9 +88,9 @@ def json_to_tmp_table(json_data):
             lower(split_part(contact_email, '@', 2)),
             regexp_replace(cdms_ref, '\\D','','g'),
             lower(replace(postcode, ' ', ''))
-        FROM json_populate_recordset(null::tmp, %s);
+        FROM json_populate_recordset(null::tmp, :data);
     """
-    db_utils.execute_statement(stmt, (json.dumps(json_data),))
+    db_utils.execute_statement(stmt, ({"data": json.dumps(json_data)},))
 
 
 def update_mappings():
