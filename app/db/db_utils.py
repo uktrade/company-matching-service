@@ -1,6 +1,7 @@
 import logging
 
 import sqlalchemy
+from sqlalchemy import text
 
 from app.db.models import sql_alchemy
 
