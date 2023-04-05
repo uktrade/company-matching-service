@@ -4,7 +4,6 @@ import pytest
 import sqlalchemy_utils
 
 from app import application
-from app.db.models import create_sequences
 
 TESTING_DB_NAME_TEMPLATE = 'cms_test_{}'
 
@@ -32,10 +31,8 @@ def app_with_db(app):
     app.db.engine.dispose()
     sqlalchemy_utils.create_database(app.config['SQLALCHEMY_DATABASE_URI'],)
     app.db.create_all()
-    create_sequences()
     yield app
-    app.db.session.close()
-    app.db.session.remove()
+    app.db.session.close_all()
     app.db.drop_all()
     sqlalchemy_utils.drop_database(app.config['SQLALCHEMY_DATABASE_URI'])
 
@@ -46,10 +43,7 @@ def app_with_db_module(app):
     app.db.engine.dispose()
     sqlalchemy_utils.create_database(app.config['SQLALCHEMY_DATABASE_URI'],)
     app.db.create_all()
-    create_sequences()
     yield app
-    app.db.session.close()
-    app.db.session.remove()
     app.db.drop_all()
     sqlalchemy_utils.drop_database(app.config['SQLALCHEMY_DATABASE_URI'])
 

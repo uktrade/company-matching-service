@@ -1,6 +1,7 @@
 import logging
 
 import sqlalchemy
+from sqlalchemy import text
 
 from app.db.models import sql_alchemy
 
@@ -12,19 +13,15 @@ def execute_query(query, raise_if_fail=True):
 
 
 def execute_statement(stmt, data=None, raise_if_fail=True):
-    connection = sql_alchemy.engine.connect()
-    transaction = connection.begin()
-    try:
-        status = connection.execute(stmt, data)
-        transaction.commit()
-        connection.close()
-        return status
-    except sqlalchemy.exc.ProgrammingError as err:
-        transaction.rollback()
-        logging.error(f'db error: {str(err)}')
-        if raise_if_fail:
-            raise err
-        connection.close()
+    with sql_alchemy.engine.connect() as conn:
+        with conn.begin():
+            try:
+                status = conn.execute(text(stmt), data)
+                return status
+            except sqlalchemy.exc.ProgrammingError as err:
+                logging.error(f'db error: {str(err)}')
+                if raise_if_fail:
+                    raise err
 
 
 def table_exists(schema, table_name, materialized_view=False):
