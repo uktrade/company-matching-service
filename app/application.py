@@ -47,7 +47,7 @@ def _create_base_app():
         os.environ.get('DATABASE_URL')
         if 'DATABASE_URL' in os.environ
         else config.get_config()['app']['database_url']
-    )
+    ).replace('postgres://', 'postgresql://')
     flask_app.config.update(
         {
             'TESTING': False,
