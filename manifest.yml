@@ -4,5 +4,5 @@ applications:
     # updated to match in the file .circleci/config.yml.
     # The supported miniconda version can be found here:
     # https://github.com/cloudfoundry/python-buildpack/releases
-  - buildpack: https://github.com/cloudfoundry/python-buildpack.git#v1.6.36
+  - buildpack: https://github.com/cloudfoundry/python-buildpack.git#v1.8.10
     stack: cflinuxfs4
