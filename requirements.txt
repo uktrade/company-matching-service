@@ -44,14 +44,8 @@ gunicorn==19.9.0
     # via -r requirements.in
 importlib-metadata==4.8.3
     # via
-    #   click
     #   flask
     #   jsonschema
-    #   pluggy
-    #   pytest
-    #   redis
-    #   sqlalchemy
-    #   sqlalchemy-utils
 itsdangerous==2.1.2
     # via flask
 jinja2==3.1.2
@@ -118,14 +112,10 @@ toml==0.10.2
 typed-ast==1.5.4
     # via black
 typing-extensions==4.5.0
-    # via
-    #   async-timeout
-    #   importlib-metadata
-    #   redis
-    #   sqlalchemy
+    # via sqlalchemy
 wcwidth==0.2.6
     # via pytest
-werkzeug==2.2.3
+werkzeug==2.3.8
     # via
     #   -r requirements.in
     #   flask
