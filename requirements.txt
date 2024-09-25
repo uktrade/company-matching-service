@@ -38,6 +38,8 @@ flask-script==2.0.6
     # via -r requirements.in
 flask-sqlalchemy==3.0.3
     # via -r requirements.in
+greenlet==3.1.1
+    # via sqlalchemy
 gunicorn==19.9.0
     # via -r requirements.in
 importlib-metadata==4.8.3
@@ -111,7 +113,7 @@ typing-extensions==4.5.0
     # via sqlalchemy
 wcwidth==0.2.6
     # via pytest
-werkzeug==3.0.1
+werkzeug==3.0.3
     # via
     #   -r requirements.in
     #   flask
