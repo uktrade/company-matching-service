@@ -38,7 +38,9 @@ flask-script==2.0.6
     # via -r requirements.in
 flask-sqlalchemy==3.0.3
     # via -r requirements.in
-gunicorn==19.9.0
+greenlet==3.1.1
+    # via sqlalchemy
+gunicorn==22.0.0
     # via -r requirements.in
 importlib-metadata==4.8.3
     # via
@@ -61,7 +63,9 @@ mohawk==1.1.0
 more-itertools==8.14.0
     # via pytest
 packaging==24.1
-    # via pytest
+    # via
+    #   gunicorn
+    #   pytest
 pathspec==0.9.0
     # via black
 pluggy==0.13.1
