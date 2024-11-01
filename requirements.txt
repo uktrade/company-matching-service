@@ -115,7 +115,7 @@ typing-extensions==4.5.0
     # via
     #   black
     #   sqlalchemy
-werkzeug==3.0.3
+werkzeug==3.0.6
     # via
     #   -r requirements.in
     #   flask
