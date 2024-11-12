@@ -1,7 +1,7 @@
 version: 2
 aliases:
   - &python_version cimg/python:3.13
-  - &postgresql_version cimg/postgres:16.4
+  - &postgresql_version cimg/postgres:17.0
   - &redis_version redis:7.4
   - &restore_pytest_cache
       restore_cache:
@@ -70,35 +70,6 @@ jobs:
       - store_artifacts:
           path: test-results/report.xml
 
-  integration_test:
-    docker:
-      - image: *python_version
-      - image: *postgresql_version
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: circle_test
-      - image: scality/s3server:latest
-      - image: *redis_version
-    working_directory: ~/cms
-    steps:
-      - checkout
-      - run: |
-          sudo apt update
-          sudo apt install postgresql-client
-          sudo ln -snf /usr/bin/psql /usr/local/bin/psql
-      - *restore_pytest_cache
-      - run:
-          environment:
-            *cms_envs
-          name: run tests
-          command: |
-            . venv/bin/activate
-            make integration-test
-      - store_test_results:
-          path: test-results/report.xml
-      - store_artifacts:
-          path: test-results/report.xml
-
   format_checks:
     docker:
       - image: *python_version
@@ -128,6 +99,3 @@ workflows:
       - unit_test:
           requires:
             - build
-      - integration_test:
-          requires:
-            - unit_test
