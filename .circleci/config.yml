@@ -1,7 +1,7 @@
 version: 2
 aliases:
   - &python_version cimg/python:3.13
-  - &postgresql_version cimg/postgres:17.0
+  - &postgresql_version cimg/postgres:16.4
   - &redis_version redis:7.4
   - &restore_pytest_cache
       restore_cache:

@@ -11,7 +11,7 @@ services:
       - .:/app
 
   cms_postgres:
-    image: "postgres:17.0"
+    image: "postgres:16.4"
     env_file:
       - ${ENV_FILE:-.env}
     ports:
