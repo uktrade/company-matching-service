@@ -1,7 +1,8 @@
 version: 2
 aliases:
-  - &python_version circleci/python:3.8
-  - &postgresql_version circleci/postgres:10.5
+  - &python_version cimg/python:3.12
+  - &postgresql_version cimg/postgres:16.4
+  - &redis_version redis:7.4
   - &restore_pytest_cache
       restore_cache:
         name: restoring python packages from cache
@@ -54,7 +55,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_DB: circle_test
       - image: scality/s3server:latest
-      - image: redis:4
+      - image: *redis_version
     working_directory: ~/cms
     steps:
       - checkout
@@ -77,7 +78,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_DB: circle_test
       - image: scality/s3server:latest
-      - image: redis:4
+      - image: *redis_version
     working_directory: ~/cms
     steps:
       - checkout
@@ -106,7 +107,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_DB: circle_test
       - image: scality/s3server:latest
-      - image: redis:4
+      - image: *redis_version
     working_directory: ~/cms
     steps:
       - checkout

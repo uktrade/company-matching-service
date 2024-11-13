@@ -44,7 +44,7 @@ def _get_docker_config():
 
 def _update_dict(dest, source):
     for k, v in source.items():
-        if isinstance(v, collections.Mapping):
+        if isinstance(v, collections.abc.Mapping):
             sub_dict = _update_dict(dest.get(k, {}), v)
             dest[k] = sub_dict
         else:
@@ -54,7 +54,7 @@ def _update_dict(dest, source):
 
 def _parse_env_vars(config):
     for k, v in config.items():
-        if isinstance(v, collections.Mapping):
+        if isinstance(v, collections.abc.Mapping):
             _parse_env_vars(v)
         if isinstance(v, list):
             for item in v:
