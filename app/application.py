@@ -3,6 +3,7 @@ from threading import get_ident
 
 import certifi
 import redis
+import sentry_sdk
 from flask import Flask, json
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import scoped_session
@@ -11,6 +12,16 @@ from app import config
 from app.api.views import api
 from app.commands.dev import cmd_group as dev_cmd
 
+sentry_sdk.init(
+    dsn=os.environ.get('SENTRY_DSN'),
+    environment=os.environ.get('ENVIRONMENT'),
+    enable_tracing=True,
+    # In data hub we have both of these set to 0.01 to reduce load on our Sentry instance
+    # but we set it to 1 here initially, to ensure the platform migration is working
+    sample_rate=1, # 0.01,
+    traces_sample_rate=1, # 0.01, # reduce the number of performance traces
+    enable_backpressure_handling=True, # ensure that when sentry is overloaded, we back off and wait
+)
 
 def get_or_create():
     from flask import current_app as flask_app
