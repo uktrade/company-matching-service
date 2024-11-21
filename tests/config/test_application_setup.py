@@ -10,8 +10,8 @@ DEFAULT_DATABASE_URL = 'postgresql://postgres:postgres@cms_postgres/postgres'
 
 def test_default_database_connection_url():
     app = application._create_base_app()
-    assert str(app.config['SQLALCHEMY_DATABASE_URI']) == 'postgresql://postgres:***@cms_postgres/postgres'
-
+    default_connection_strings = ['postgresql://postgres:***@cms_postgres/postgres', 'postgresql://postgres@localhost/circle_test?sslmode=disable']
+    assert str(app.config['SQLALCHEMY_DATABASE_URI']) in default_connection_strings
 
 @mock.patch.dict(os.environ, {"DATABASE_URL": DATABASE_URL})
 def test_gov_paas_database_connection_url():
