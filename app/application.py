@@ -109,7 +109,10 @@ def _load_uri_from_vcap_services(service_type):
 
 
 def _get_redis_url(flask_app):
-    redis_uri = _load_uri_from_vcap_services('redis')
+    if 'REDIS_ENDPOINT' in os.environ:
+        redis_uri = os.environ.get('REDIS_ENDPOINT')
+    else:
+        redis_uri = _load_uri_from_vcap_services('redis')
     if not redis_uri:
         password = flask_app.config['cache'].get('password')
         redis_uri = (
