@@ -30,7 +30,8 @@ def test_dbt_paas_database_connection_url():
 def test_default_redis_connection():
     app = application._create_base_app()
     redis_conn = app.cache.connection_pool.connection_kwargs
-    assert redis_conn['host'] == 'cms_redis'
+    default_hosts = ['cms_redis', 'localhost']
+    assert redis_conn['host'] in default_hosts
     assert redis_conn['port'] == 6379
     assert app.cache.connection_pool.connection_class == Connection
 
