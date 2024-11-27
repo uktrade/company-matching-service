@@ -4,6 +4,7 @@ from threading import get_ident
 import certifi
 import redis
 import sentry_sdk
+from dbt_copilot_python.database import database_url_from_env
 from flask import Flask, json
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import scoped_session
@@ -23,6 +24,7 @@ sentry_sdk.init(
     enable_backpressure_handling=True, # ensure that when sentry is overloaded, we back off and wait
 )
 
+
 def get_or_create():
     from flask import current_app as flask_app
 
@@ -33,17 +35,10 @@ def get_or_create():
 
 def make_current_app_test_app(test_db_name):
     flask_app = get_or_create()
-    postgres_db_config = (
-        os.environ.get('DATABASE_URL')
-        if 'DATABASE_URL' in os.environ
-        else config.get_config()['app']['database_url']
-    )
     flask_app.config.update(
         {
             'TESTING': True,
-            'SQLALCHEMY_DATABASE_URI': _create_sql_alchemy_connection_str(
-                postgres_db_config, test_db_name
-            ),
+            'SQLALCHEMY_DATABASE_URI': _database_url(test_db_name),
         }
     )
     return flask_app
@@ -53,16 +48,10 @@ def _create_base_app():
     flask_app = Flask(__name__)
     flask_app.config.update(config.get_config())
     flask_app.cli.add_command(dev_cmd)
-
-    postgres_db_config = (
-        os.environ.get('DATABASE_URL')
-        if 'DATABASE_URL' in os.environ
-        else config.get_config()['app']['database_url']
-    ).replace('postgres://', 'postgresql://')
     flask_app.config.update(
         {
             'TESTING': False,
-            'SQLALCHEMY_DATABASE_URI': _create_sql_alchemy_connection_str(postgres_db_config),
+            'SQLALCHEMY_DATABASE_URI': _database_url(),
             # set SQLALCHEMY_TRACK_MODIFICATIONS to False because
             # default of None produces warnings, and track modifications
             # are not required
@@ -71,6 +60,19 @@ def _create_base_app():
     )
     flask_app = _register_components(flask_app)
     return flask_app
+
+
+def _database_url(db_name=None):
+    # DBT PaaS provides a single environment variable with a dict of database properties
+    if 'DATABASE_CREDENTIALS' in os.environ:
+        url = database_url_from_env("DATABASE_CREDENTIALS")
+    # Gov PaaS has a database URL env var
+    elif 'DATABASE_URL' in os.environ:
+        url = os.environ.get('DATABASE_URL')
+    else:
+        url = config.get_config()['app']['database_url']
+    url = url.replace('postgres://', 'postgresql://')
+    return _create_sql_alchemy_connection_str(url, db_name)
 
 
 def _register_components(flask_app):
@@ -107,7 +109,10 @@ def _load_uri_from_vcap_services(service_type):
 
 
 def _get_redis_url(flask_app):
-    redis_uri = _load_uri_from_vcap_services('redis')
+    if 'REDIS_ENDPOINT' in os.environ:
+        redis_uri = os.environ.get('REDIS_ENDPOINT')
+    else:
+        redis_uri = _load_uri_from_vcap_services('redis')
     if not redis_uri:
         password = flask_app.config['cache'].get('password')
         redis_uri = (
