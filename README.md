@@ -22,7 +22,20 @@ copilot svc exec --app company-matching-service --env prod --name company-matchi
 python manage.py dev add_hawk_user --client_id=<abc> --client_key=<123> --client_scope="*" --description=migration-test
 ```
 
-These credentials should be removed again once testing has been completed
+These credentials should be removed again once testing has been completed:
+
+On Gov PaaS:
+
+```bash
+python3 manage.py shell 
+```
+
+```python
+from flask import current_app as flask_app
+
+HawkUsers.query.filter_by(id='<abc>').delete()
+flask_app.db.session.commit()
+```
 
 ### Run tests
 
