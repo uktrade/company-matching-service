@@ -3,8 +3,8 @@ import json
 import requests
 from mohawk import Sender
 
-# MATCHING_SERVICE_BASE_URL = os.environ.get("MATCHING_SERVICE_BASE_URL")
-# MATCHING_SERVICE_BASE_URL = "http://localhost:5080"
+# GOV_PAAS_MATCHING_SERVICE_BASE_URL = os.environ.get("MATCHING_SERVICE_BASE_URL")
+# GOV_PAAS_MATCHING_SERVICE_BASE_URL = "http://localhost:5080"
 GOV_PAAS_MATCHING_SERVICE_BASE_URL = "https://company-matching-service-staging.london.cloudapps.digital"
 DBT_PAAS_MATCHING_SERVICE_BASE_URL = "https://company-matching.prod.uktrade.digital"
 HAWK_CLIENT_ID = os.environ.get("HAWK_CLIENT_ID")
@@ -55,14 +55,14 @@ def test_match():
     request = {'descriptions': descriptions}
     match_type = "match"
     gov_paas_data = _hawk_api_request(
-        url=f'{MATCHING_SERVICE_BASE_URL}/api/v1/company/{match_type}/',
+        url=f'{GOV_PAAS_MATCHING_SERVICE_BASE_URL}/api/v1/company/{match_type}/',
         method='POST',
         query=request,
         credentials=HAWK_CREDENTIALS,
         expected_response_structure='matches',
     )
     dbt_paas_data = _hawk_api_request(
-        url=f'{MATCHING_SERVICE_BASE_URL}/api/v1/company/{match_type}/',
+        url=f'{DBT_PAAS_MATCHING_SERVICE_BASE_URL}/api/v1/company/{match_type}/',
         method='POST',
         query=request,
         credentials=HAWK_CREDENTIALS,
