@@ -4,8 +4,10 @@ import requests
 from mohawk import Sender
 
 # MATCHING_SERVICE_BASE_URL = os.environ.get("MATCHING_SERVICE_BASE_URL")
-MATCHING_SERVICE_BASE_URL = "http://localhost:5080"
-HAWK_CLIENT_ID = os.environ.get("HAWK_CLIENT_ID", "weird")
+# MATCHING_SERVICE_BASE_URL = "http://localhost:5080"
+GOV_PAAS_MATCHING_SERVICE_BASE_URL = "https://company-matching-service-staging.london.cloudapps.digital"
+DBT_PAAS_MATCHING_SERVICE_BASE_URL = "https://company-matching.prod.uktrade.digital"
+HAWK_CLIENT_ID = os.environ.get("HAWK_CLIENT_ID")
 HAWK_CLIENT_KEY = os.environ.get("HAWK_CLIENT_KEY")
 HAWK_CREDENTIALS = {
     "id": HAWK_CLIENT_ID,
@@ -46,14 +48,31 @@ def _hawk_api_request(
 
 
 def test_match():
-    descriptions = []
+    descriptions = [
+        {'id': '1', 'companies_house_id': '1rr31111', 'company_name': 'bad corp'}
+    ]
+
     request = {'descriptions': descriptions}
     match_type = "match"
-    data = _hawk_api_request(
+    gov_paas_data = _hawk_api_request(
         url=f'{MATCHING_SERVICE_BASE_URL}/api/v1/company/{match_type}/',
         method='POST',
         query=request,
         credentials=HAWK_CREDENTIALS,
         expected_response_structure='matches',
     )
-    print(data)
+    dbt_paas_data = _hawk_api_request(
+        url=f'{MATCHING_SERVICE_BASE_URL}/api/v1/company/{match_type}/',
+        method='POST',
+        query=request,
+        credentials=HAWK_CREDENTIALS,
+        expected_response_structure='matches',
+    )
+    assert dbt_paas_data == gov_paas_data
+    # expected_result = {
+    #     'matches': [
+    #         {'id': '1', 'match_id': None, 'similarity': '000000'},
+    #     ]
+    # }
+    # print(data)
+    # assert data == expected_result
