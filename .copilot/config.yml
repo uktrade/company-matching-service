@@ -1,0 +1,4 @@
+repository: company-matching/company-matching-service
+builder:
+  name: paketobuildpacks/builder-jammy-full
+  version: 0.3.414
